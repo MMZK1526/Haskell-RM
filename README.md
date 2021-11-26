@@ -33,7 +33,7 @@ Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from `L0`; which decrements `R1
 
 If we treat `R0` as the result and the other registers as the input, then a register machine that has registers from `R0` to `Rn` is a partial function from $\mathbb N^n$ to $\mathbb N$. In our previous example, the function is `f(R1, R2) = R1 + R2`.  
 
-Despite its first appearance, register machines are actually very powerful: the system is Turing-complete. This means it can do basically whatever modern computers can do.
+Despite its first appearance, register machines are actually very powerful: the system is Turing-complete. This means they are capable of basically whatever modern computers can do.
 
 ## Efficiency
 TODO

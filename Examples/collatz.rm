@@ -1,23 +1,23 @@
-1 1 22
-1 2 21
-1 3
-1 4
-1 5 7
-1 6 10
-2 4
-2 8 9
-1 7
-0 0
-1 11
-2 12 14
-1 13
-1 11
-1 15 18
-2 16
-2 17
-2 14
-1 19
-2 20 9
-1 19
-0 22
-H
+checkIs0: R1 checkIs1 end
+checkIs1: R1 addBack1 reach1
+addBack1: R1 addBack2
+addBack2: R1 mod0
+mod0:     R1 mod1     R2ToR1
+mod1:     R1 div2     odd
+div2:     R2 mod0
+R2ToR1:   R2 R1FromR2 countInc
+R1FromR2: R1 R2ToR1
+countInc: R0 checkIs0
+odd:      R1 clearR2
+clearR2:  R2 R1Reset1 R1To3R2
+R1Reset1: R1 R1Reset2
+R1Reset2: R1 clearR2
+R1To3R2:  R1 times3_1 R1Plus1
+times3_1: R2 times3_2
+times3_2: R2 times3_3
+times3_3: R2 R1To3R2
+R1Plus1:  R1 dumpR2
+dumpR2:   R2 fillR1   countInc
+fillR1:   R1 dumpR2
+reach1:   R0 end
+end:      H

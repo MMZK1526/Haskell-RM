@@ -27,7 +27,7 @@ rmParser str = do
     go ':' _            = Just ""
     go ' ' cs           = cs
     go c   cs           = (c :) <$> cs
-    isValid (l : ls)    = isAlpha l && all isAlphaNum ls
+    isValid (l : ls)    = isAlpha l && all (liftM2 (||) isAlphaNum (== '_')) ls
     isValid _           = False
     genTable _ []       = Right M.empty
     genTable i (l : ls) = do
@@ -54,7 +54,7 @@ parseInt = read <$> do
 
 -- | Parses an alpha-num identifier that starts with a letter.
 parseAlphaNum :: Parser String
-parseAlphaNum = liftM2 (:) letter $ many alphaNum
+parseAlphaNum = liftM2 (:) letter $ many (alphaNum <|> char '_')
 
 -- | Ignores zero or many spaces.
 eatSpaces :: Parser ()
