@@ -63,7 +63,7 @@ eatSpaces = void $ many $ char ' '
 -- | Parses a single "Line" of code given the label table.
 parseLine :: M.Map String Int -> Parser Line
 parseLine table = (<* eof) $ (prefix >>) $ parseHalt <|> do
-  char 'R'
+  void (char 'R') <|> return ()
   i <- parseInt
   eatSpaces
   j <- parseLabel

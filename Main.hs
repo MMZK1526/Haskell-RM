@@ -1,13 +1,33 @@
 module Main where
 
 import           Definitions
+import           Gadgets.IO
 import           Parser
 import           RM
 import           RMCode
+import           System.Environment
+import           Text.Read
+
+
+{-# INLINE help #-}
+help :: IO ()
+help = putStrLn "Please pass in the path of the source code and the arguments!"
 
 main :: IO ()
-main = print $ evalRM collatz [12345678987654321]
-
+main = do
+  args <- getArgs
+  if      null args
+  then    help
+  else do
+  (file : args) <- return args
+  handleDNE ((>> help) . print) $ do
+  text <- readFile file
+  case rmParser text of
+    Left error -> print error -- Error parsing source code
+    Right code -> do
+    case mapM (readMaybe :: String -> Maybe Integer) args of
+      Nothing   -> putStrLn "Error parsing the arguments!"
+      Just args -> print $ evalRM code args -- Run the program
 
 --------------------------------------------------------------------------------
 -- Examples
