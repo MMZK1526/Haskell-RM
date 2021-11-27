@@ -1,6 +1,6 @@
 module Parser where
 
-import           Control.Monad (void, liftM2, zipWithM)
+import           Control.Monad (void, liftM2, zipWithM, (>=>))
 import           Data.Bifunctor (first)
 import qualified Data.Map as M
 import           Data.Maybe (fromMaybe)
@@ -27,35 +27,6 @@ data RawRMCode
   = RMCode_ LabelTable [LabelledLine]
   deriving Show
 
--- | Parses an "RMCode".
-rmParser :: String -> Either String RMCode
-rmParser str = do
-  let ls = lines str
-  table <- genTable 0 ls
-  fmap (RMCode . A.fromList) $
-       first show $
-             mapM (parse (parseLine table) "RMCode: ") ls
-  where
-    getLabel            = foldr go Nothing
-    go ':' _            = Just ""
-    go ' ' cs           = cs
-    go c   cs           = (c :) <$> cs
-    isValid (l : ls)    = isAlpha l && all (liftM2 (||) isAlphaNum (== '_')) ls
-    isValid _           = False
-    genTable _ []       = Right M.empty
-    genTable i (l : ls) = do
-      table <- genTable (i + 1) ls
-      case getLabel l of
-        Nothing -> return table
-        Just l' -> do
-          if not $ isValid l'
-          then    Left $
-            "Invalid label \"" ++ l' ++ "\" at line " ++ show i ++ "!"
-          else if M.member l' table
-          then    Left $
-            "Duplicate label " ++ l' ++ " at line " ++ show i ++ "!"
-          else    return $ M.insert l' i table
-
 -- | Parses a decimal digit.
 parseInt :: Parser Int
 parseInt = read <$> do
@@ -73,8 +44,42 @@ parseAlphaNum = liftM2 (:) letter $ many (alphaNum <|> char '_')
 eatSpaces :: Parser ()
 eatSpaces = void $ many $ char ' '
 
--- | Parses a single "Line" of code, taking a label table, the line number. U
--- Updates the table.
+-- | Parses a "RMCode" from String.
+rmParser :: String -> Either String RMCode
+rmParser = rmParser' >=> fromRawRMCode
+
+-- | Translates a "RawRMCode" to "RMCode".
+fromRawRMCode :: RawRMCode -> Either String RMCode
+fromRawRMCode (RMCode_ table ls) = RMCode . A.fromList <$> zipWithM go [0..] ls
+  where
+    go i l = case l of
+      P_ x y   -> P x <$> fetch i y
+      M_ x y z -> liftM2 (M x) (fetch i y) (fetch i z)
+      H_       -> return H
+    fetch _ (Left n) = return n
+    fetch i (Right str)
+      | str `M.member` table = return $ table M.! str
+      | otherwise            = Left $ concat [ "Invalid label "
+                                             , str
+                                             , " at line "
+                                             , show i
+                                             , "!"
+                                             ]
+
+-- | Parses a "RawRMCode" from String.
+rmParser' :: String -> Either String RawRMCode
+rmParser' str = first show $ go (lines str) 0
+  where
+    go [] _ = Right $ RMCode_ M.empty []
+    go (l : ls) i
+      | all (== ' ') l = go ls $ i + 1
+      | otherwise      = do
+        RMCode_ table cs <- go ls $ i + 1
+        (table, line)    <- parse (parseLine' table i) "RMCode: " l
+        return $ RMCode_ table $ line : cs
+
+-- | Parses a single "LabelledLine" of code, taking a label table, the line 
+-- number. Updates the table.
 parseLine' :: LabelTable -> Int -> Parser (LabelTable, LabelledLine)
 parseLine' table i = do
   eatSpaces
@@ -82,16 +87,17 @@ parseLine' table i = do
   table <- case label of
     Nothing -> return table
     Just l  -> if l `M.member` table
-    then fail $ "Duplicate label " ++ l ++ " at line " ++ show i ++ " !"
+    then fail $ "Duplicate label " ++ l ++ " at line " ++ show i ++ "!"
     else return $ M.insert l i table
   eatSpaces
-  line <- try (parseP table) <|> try (parseM table) <|> parseH
+  line <- try (parseM table) <|> try (parseP table) <|> parseH
   eatSpaces
   return (table, line)
   where
     parsePrefix  = do
       try (do
       label <- parseAlphaNum
+      eatSpaces
       char ':'
       return $ Just label
       ) <|> return Nothing
@@ -118,33 +124,3 @@ parseLine' table i = do
       try (string "HALT") <|> string "H"
       eatSpaces
       return H_
-
--- | Parses a single "Line" of code given the label table.
-parseLine :: M.Map String Int -> Parser Line
-parseLine table = (<* eof) $ (prefix >>) $ parseHalt <|> do
-  void (char 'R') <|> return ()
-  i <- parseInt
-  eatSpaces
-  j <- parseLabel
-  eatSpaces
-  try (do
-  k <- parseLabel
-  eatSpaces
-  return $ M i j k) <|> return (P i j)
-  where
-    parseLabel = try (do
-      label <- try parseAlphaNum
-      case table M.!? label of
-        Just l  -> return l
-        Nothing -> fail $ "Invalid label " ++ label
-      ) <|> ((void (char 'L') <|> return ()) >> parseInt)
-    parseHalt  = do
-      try (string "HALT") <|> string "H"
-      eatSpaces
-      return H
-    -- Ignore labels (if any).
-    prefix     = do
-      try (do
-      many $ noneOf ":"
-      void $ char ':') <|> return ()
-      eatSpaces
