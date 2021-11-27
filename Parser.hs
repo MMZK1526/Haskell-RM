@@ -14,6 +14,19 @@ import           Text.Parsec.Error (ParseError)
 import           Text.Parsec.String (Parser)
 import           Data.Char (isAlpha, isAlphaNum)
 
+type LabelTable = M.Map String Int
+
+-- | A Line of RM code that can contain labels.
+data LabelledLine
+  = P_ Int (Either Int String)
+  | M_ Int (Either Int String) (Either Int String)
+  | H_
+  deriving Show
+
+data RawRMCode
+  = RMCode_ LabelTable [LabelledLine]
+  deriving Show
+
 -- | Parses an "RMCode".
 rmParser :: String -> Either String RMCode
 rmParser str = do
@@ -59,6 +72,52 @@ parseAlphaNum = liftM2 (:) letter $ many (alphaNum <|> char '_')
 -- | Ignores zero or many spaces.
 eatSpaces :: Parser ()
 eatSpaces = void $ many $ char ' '
+
+-- | Parses a single "Line" of code, taking a label table, the line number. U
+-- Updates the table.
+parseLine' :: LabelTable -> Int -> Parser (LabelTable, LabelledLine)
+parseLine' table i = do
+  eatSpaces
+  label <- parsePrefix
+  table <- case label of
+    Nothing -> return table
+    Just l  -> if l `M.member` table
+    then fail $ "Duplicate label " ++ l ++ " at line " ++ show i ++ " !"
+    else return $ M.insert l i table
+  eatSpaces
+  line <- try (parseP table) <|> try (parseM table) <|> parseH
+  eatSpaces
+  return (table, line)
+  where
+    parsePrefix  = do
+      try (do
+      label <- parseAlphaNum
+      char ':'
+      return $ Just label
+      ) <|> return Nothing
+    parseLable t = try (Right <$> parseAlphaNum) <|> do
+      void (char 'L') <|> return ()
+      Left <$> parseInt
+    parseP t     = do
+      void (char 'R') <|> return ()
+      x <- parseInt
+      void (char '+') <|> return ()
+      eatSpaces
+      y <- parseLable t
+      return $ P_ x y
+    parseM t     = do
+      void (char 'R') <|> return ()
+      x <- parseInt
+      void (char '-') <|> return ()
+      eatSpaces
+      y <- parseLable t
+      eatSpaces
+      z <- parseLable t
+      return $ M_ x y z
+    parseH       = do
+      try (string "HALT") <|> string "H"
+      eatSpaces
+      return H_
 
 -- | Parses a single "Line" of code given the label table.
 parseLine :: M.Map String Int -> Parser Line
