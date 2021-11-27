@@ -108,6 +108,7 @@ parseLine' table i = do
       void (char 'R') <|> return ()
       x <- parseInt
       void (char '+') <|> return ()
+      char ' '
       eatSpaces
       y <- parseLable t
       return $ P_ x y
@@ -115,8 +116,10 @@ parseLine' table i = do
       void (char 'R') <|> return ()
       x <- parseInt
       void (char '-') <|> return ()
+      char ' '
       eatSpaces
       y <- parseLable t
+      char ' '
       eatSpaces
       z <- parseLable t
       return $ M_ x y z
