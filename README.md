@@ -22,11 +22,11 @@ A halt operation terminates the machine.
 Consider the following example:
 
 ```
-0: R1- 1 2
-1: R0+ 0
-2: R2- 3 4
-3: R0+ 2
-4: HALT
+L0: R1- L 2
+L1: R0+ 0
+L2: R2- 3 4
+L3: R0+ 2
+L4: HALT
 ```
 
 Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from line `0`; which decrements `R1` and goes to line `1`; which increments `R0` and goes back to line `0`; which goes to line `2` since `R1 = 0`; which decrements `R2` and goes to line `3`; which increments `R0` and goes to line `2`; which decrements `R2` and goes to line `3`; which increments `R0` and goes to line `2`; which goes to line `4` since `R2 = 0`; which halts with `R0 = 3`, `R1 = 0` and `R2 = 0`.

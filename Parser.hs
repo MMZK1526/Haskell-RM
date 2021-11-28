@@ -4,6 +4,7 @@ import           Control.Monad (void, liftM2, zipWithM, (>=>))
 import           Data.Bifunctor (first)
 import qualified Data.Map as M
 import           Data.Maybe (fromMaybe)
+import qualified Data.Set as S
 import           Definitions
 import qualified Gadgets.Array as A
 import           Text.Parsec
@@ -16,6 +17,9 @@ import           Data.Char (isAlpha, isAlphaNum)
 
 type LabelTable = M.Map String Int
 
+-- | A map from negatively-indexed registers to real registers for gadgets.
+type RegTable = M.Map Int Int
+
 -- | A Line of RM code that can contain labels.
 data LabelledLine
   = P_ Int (Either Int String)
@@ -23,9 +27,22 @@ data LabelledLine
   | H_
   deriving Show
 
+-- | A Gadget with its signature and labelled body.
+data RawGadget
+  = Gadget_ Signature LabelTable [LabelledLine]
+  deriving Show
+
+-- | Gadget signature: name, input registers, and returning labels.
+data Signature
+  = Sig_ String (S.Set String) (S.Set String)
+  deriving Show
+
 data RawRMCode
   = RMCode_ LabelTable [LabelledLine]
   deriving Show
+
+-- | Parses a "RawGadget".
+-- parseGadget :: Parser Gadget
 
 -- | Parses a decimal digit.
 parseInt :: Parser Int
@@ -46,15 +63,19 @@ eatSpaces = void $ many $ char ' '
 
 -- | Parses a "RMCode" from String.
 rmParser :: String -> Either String RMCode
-rmParser = rmParser' >=> fromRawRMCode
+rmParser = first show <$> parse parseRM "RMCode: " >=> fromRawRMCode
 
 -- | Translates a "RawRMCode" to "RMCode".
 fromRawRMCode :: RawRMCode -> Either String RMCode
 fromRawRMCode (RMCode_ table ls) = RMCode . A.fromList <$> zipWithM go [0..] ls
   where
     go i l = case l of
-      P_ x y   -> P x <$> fetch i y
-      M_ x y z -> liftM2 (M x) (fetch i y) (fetch i z)
+      P_ x y   -> if x < 0
+        then Left $ "Negatively-indexed register at line " ++ show i ++ "!"
+        else P x <$> fetch i y
+      M_ x y z -> if x < 0
+        then Left $ "Negatively-indexed register at line " ++ show i ++ "!"
+        else liftM2 (M x) (fetch i y) (fetch i z)
       H_       -> return H
     fetch _ (Left n) = return n
     fetch i (Right str)
@@ -66,17 +87,16 @@ fromRawRMCode (RMCode_ table ls) = RMCode . A.fromList <$> zipWithM go [0..] ls
                                              , "!"
                                              ]
 
--- | Parses a "RawRMCode" from String.
-rmParser' :: String -> Either String RawRMCode
-rmParser' str = first show $ go (lines str) 0
+-- | Parses a "RawRMCode".
+parseRM :: Parser RawRMCode
+parseRM = (\x -> let (t, cs) = x in RMCode_ t cs) <$> go M.empty 0
   where
-    go [] _ = Right $ RMCode_ M.empty []
-    go (l : ls) i
-      | all (== ' ') l = go ls $ i + 1
-      | otherwise      = do
-        RMCode_ table cs <- go ls $ i + 1
-        (table, line)    <- parse (parseLine' table i) "RMCode: " l
-        return $ RMCode_ table $ line : cs
+    go t i = (eof >> return (t, [])) <|> do
+      (t, line) <- parseLine' t i
+      (eof >> return (t, [line])) <|> do
+      char '\n'
+      (t, code) <- go t $ i + 1
+      return (t, line : code)
 
 -- | Parses a single "LabelledLine" of code, taking a label table, the line 
 -- number. Updates the table.
