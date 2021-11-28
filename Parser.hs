@@ -4,7 +4,7 @@ import           Control.Monad (void, liftM2, zipWithM, (>=>))
 import           Data.Bifunctor (first)
 import qualified Data.Map as M
 import           Data.Maybe (fromMaybe)
-import qualified Data.Set as S
+import           Data.Tuple (swap)
 import           Definitions
 import qualified Gadgets.Array as A
 import           Text.Parsec
@@ -33,8 +33,9 @@ data RawGadget
   deriving Show
 
 -- | Gadget signature: name, input registers, and returning labels.
+-- Indexed with negative integers.
 data Signature
-  = Sig_ String (S.Set String) (S.Set String)
+  = Sig_ String (M.Map Int String) (M.Map Int String)
   deriving Show
 
 data RawRMCode
@@ -42,7 +43,77 @@ data RawRMCode
   deriving Show
 
 -- | Parses a "RawGadget".
--- parseGadget :: Parser Gadget
+-- parseGadget :: Parser RawGadget
+parseGadget = do
+  sig <- parseSig
+  char '\n'
+  -- (t, line) <- parseLine t i
+  -- (eof >> return (t, [line])) <|> do
+  -- char '\n'
+  -- (t, code) <- go t $ i + 1
+  -- -- return (t, line : code)
+  return sig
+  where
+    parseLine t i = do
+      eatSpaces
+      label <- parsePrefix
+      table <- case label of
+        Nothing -> return t
+        Just l  -> if l `M.member` t
+        then fail $ "Duplicate label " ++ l ++ " at line " ++ show i ++ "!"
+        else return $ M.insert l i t
+      eatSpaces
+      line <- try parseM <|> try parseP <|> parseH
+      eatSpaces
+      return (table, line)
+    parseP        = do
+      void (char 'R') <|> return ()
+      x <- parseInt
+      void (char '+') <|> return ()
+      char ' '
+      eatSpaces
+      P_ x <$> parseLabel
+    parseM        = do
+      void (char 'R') <|> return ()
+      x <- parseInt
+      void (char '-') <|> return ()
+      char ' '
+      eatSpaces
+      y <- parseLabel
+      char ' '
+      eatSpaces
+      M_ x y <$> parseLabel
+    parseH        = do
+      try (string "HALT") <|> string "H"
+      eatSpaces
+      return H_
+    parseSig      = do
+      eatSpaces
+      name <- parseAlphaNum
+      eatSpaces
+      char '('
+      args <- M.fromList . fmap swap . M.toList <$> parseArgs (-1)
+      rets <- M.fromList . fmap swap . M.toList <$> parseRets (-1)
+      eatSpaces
+      char ':'
+      eatSpaces
+      return $ Sig_ name args rets
+    parseArgs i   = do
+      eatSpaces
+      (char ';' >> return M.empty) <|> do
+      a  <- parseAlphaNum
+      as <- parseArgs $ i - 1
+      if   a `M.member` as
+      then fail $ "Duplicate argument " ++ a ++ "!"
+      else return $ M.insert a i as
+    parseRets i    = do
+      eatSpaces
+      (char ')' >> return M.empty) <|> do
+      r  <- parseAlphaNum
+      rs <- parseRets $ i - 1
+      if   r `M.member` rs
+      then fail $ "Duplicate argument " ++ r ++ "!"
+      else return $ M.insert r i rs
 
 -- | Parses a decimal digit.
 parseInt :: Parser Int
@@ -92,16 +163,31 @@ parseRM :: Parser RawRMCode
 parseRM = (\x -> let (t, cs) = x in RMCode_ t cs) <$> go M.empty 0
   where
     go t i = (eof >> return (t, [])) <|> do
-      (t, line) <- parseLine' t i
+      (t, line) <- parseLine t i
       (eof >> return (t, [line])) <|> do
       char '\n'
       (t, code) <- go t $ i + 1
       return (t, line : code)
 
+-- | Parse the label of a line.
+parsePrefix :: Parser (Maybe String)
+parsePrefix = try (do
+  label <- parseAlphaNum
+  eatSpaces
+  char ':'
+  return $ Just label
+  ) <|> return Nothing
+
+-- | Parse a line number, either an "Int" or a label.
+parseLabel :: Parser (Either Int String)
+parseLabel = try (Right <$> parseAlphaNum) <|> do
+  void (char 'L') <|> return ()
+  Left <$> parseInt
+
 -- | Parses a single "LabelledLine" of code, taking a label table, the line 
 -- number. Updates the table.
-parseLine' :: LabelTable -> Int -> Parser (LabelTable, LabelledLine)
-parseLine' table i = do
+parseLine :: LabelTable -> Int -> Parser (LabelTable, LabelledLine)
+parseLine table i = do
   eatSpaces
   label <- parsePrefix
   table <- case label of
@@ -110,39 +196,27 @@ parseLine' table i = do
     then fail $ "Duplicate label " ++ l ++ " at line " ++ show i ++ "!"
     else return $ M.insert l i table
   eatSpaces
-  line <- try (parseM table) <|> try (parseP table) <|> parseH
+  line <- try parseM <|> try parseP <|> parseH
   eatSpaces
   return (table, line)
   where
-    parsePrefix  = do
-      try (do
-      label <- parseAlphaNum
-      eatSpaces
-      char ':'
-      return $ Just label
-      ) <|> return Nothing
-    parseLable t = try (Right <$> parseAlphaNum) <|> do
-      void (char 'L') <|> return ()
-      Left <$> parseInt
-    parseP t     = do
+    parseP      = do
       void (char 'R') <|> return ()
       x <- parseInt
       void (char '+') <|> return ()
       char ' '
       eatSpaces
-      y <- parseLable t
-      return $ P_ x y
-    parseM t     = do
+      P_ x <$> parseLabel
+    parseM      = do
       void (char 'R') <|> return ()
       x <- parseInt
       void (char '-') <|> return ()
       char ' '
       eatSpaces
-      y <- parseLable t
+      y <- parseLabel
       char ' '
       eatSpaces
-      z <- parseLable t
-      return $ M_ x y z
+      M_ x y <$> parseLabel
     parseH       = do
       try (string "HALT") <|> string "H"
       eatSpaces
