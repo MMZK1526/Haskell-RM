@@ -92,22 +92,22 @@ getCycle rmCode@(RMCode code) = runST $ do
 
 -- | The state of a RM.
 -- Holding the number of registers, the value of each registers, the cycles,
--- and if it has reached a halting configuration.
+-- the program counter, and if it has reached a halting configuration.
 --
 -- Note that the state is represented by a mutable array, so this data
 -- structure is only useful under the monad "m".
 data RMState a m
   =  MArray a Integer m
-  => RMState Int Bool RMCycle (a Int Integer)
+  => RMState Int Int Bool RMCycle (a Int Integer)
 
 type RMStateST s = RMState (STArray s) (ST s)
 
-pattern RMState' :: MArray a Integer m => a Int Integer -> RMState a m
-pattern RMState' regs <- RMState _ _ _ regs
+pattern RMState' :: MArray a Integer m => Int -> a Int Integer -> RMState a m
+pattern RMState' pc regs <- RMState _ pc _ _ regs
 
 -- Contructing a "RMState" under the "ST" monad.
-rmStateST ::
-  Int -> Bool -> RMCycle -> STArray s Int Integer -> RMState (STArray s) (ST s)
+rmStateST :: Int -> Int -> Bool -> RMCycle -> STArray s Int Integer 
+  -> RMState (STArray s) (ST s)
 rmStateST = RMState
 
 -- | A "RMCode" with the current state of registers and program counter.
@@ -115,19 +115,19 @@ data RM a m
   =  MArray a Integer m
   => RM { getCode     :: RMCode
         , getRegState :: RMState a m
-        , getPC       :: Int
         }
 
--- | A bidirectional pattern for "RM" that extracts the array in "RMCode", the
--- mutable array of register values in "RMState", and the program counter.
+-- | A bidirectional pattern for "RM" that extracts the array in "RMCode" and 
+-- the mutable array of register values in "RMState".
 pattern RM' :: MArray a Integer m
   => Array Int Line
   -> a Int Integer -> Int -> RM a m
-pattern RM' code regs pc <- RM (RMCode code) (RMState _ _ _ regs) pc
+pattern RM' code regs pc <- RM (RMCode code) (RMState _ pc _ _ regs)
   where
     RM' code regs pc = let rmCode = RMCode code
                            cycle  = getCycle rmCode
-                       in  RM rmCode (RMState (argc rmCode) False cycle regs) pc
+                       in  RM rmCode 
+                              (RMState (argc rmCode) pc False cycle regs)
 
 -- | Builds "RM" from "RMCode" and a list of arguments with pc = 0.
 initRM :: forall m a. MArray a Integer m => RMCode -> [Integer] -> m (RM a m)
