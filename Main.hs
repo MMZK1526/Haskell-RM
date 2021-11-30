@@ -127,3 +127,12 @@ collatz = fromList
   , H
   ]
   
+testP :: RMCode
+testP = code
+  where
+    Right code = rmParser "L0: R1- L2 L1\n\
+                          \L1: HALT\n\
+                          \L2: R1- L3 L4\n\
+                          \L3: R1- L5 L4\n\
+                          \L4: HALT\n\
+                          \L5: R0+ L0"

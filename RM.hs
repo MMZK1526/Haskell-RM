@@ -8,6 +8,7 @@ import           Control.Monad.ST (ST, runST)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.State (StateT(..), get, gets, put)
 import           Data.Array (Array)
+import           Data.Array.IO (IOArray)
 import qualified Data.Array as A
 import           Data.Array.ST (MArray, STArray)
 import qualified Data.Array.ST as MA
@@ -20,12 +21,26 @@ import qualified Gadgets.Array.Mutable as MA
 runRM :: RMCode -> [Integer] -> [Integer]
 runRM rmCode args = runST $ do
   rm               <- initRMST rmCode args
-  RMState' _ regs <- exec rm
+  RMState' _ regs <- exec' rm
   init . toList <$> (MA.freeze :: STArray s Int a -> ST s (Array Int a)) regs
 
 -- | Run the given RMCode with the given list of arguments, returns the answer.
 evalRM :: RMCode -> [Integer] -> Integer
 evalRM = (head .) . runRM
+
+runRMIO :: RMCode -> [Integer] -> IO [Integer]
+runRMIO rmCode args =  do
+  rm               <- initRMIO rmCode args
+  RMState' _ regs <- execIO rm 0
+  init . toList <$> (MA.freeze :: IOArray Int a -> IO (Array Int a)) regs
+  where
+    execIO rm i = do
+      (rs@(RMState _ pc h _ regs), rm) <- runStateT eval1S rm
+      regs <- (MA.freeze :: IOArray Int a -> IO (Array Int a)) regs
+      putStrLn $ "Step " ++ show i ++ ": " 
+      putStrLn $ "PC: " ++ show pc
+      putStrLn $ "Regs: " ++ show (toList regs)
+      if h then return rs else execIO rm $ i + 1
 
 -- | Evaluate the given "RM" by one step.
 eval1S :: forall m a. MonadFail m
@@ -79,10 +94,18 @@ evalCycleS = do
   forM_ cycle $ \(r, (net, _)) -> lift (MA.adjust' regs (+ rounds * net) r)
   return $ RMState c pc h cy regs
 
--- | Execute the RM until it halts.
+-- | Execute the RM until it halts with cycle-detection optimisation.
 exec :: forall m a. MonadFail m
   => MArray a Integer m
   => RM a m -> m (RMState a m)
 exec rm = do
   (rs@(RMState _ _ h _ regs), rm) <- runStateT evalCycleS rm
   if h then return rs else exec rm
+
+-- | Naively Execute the RM until it halts without optimisation.
+exec' :: forall m a. MonadFail m
+  => MArray a Integer m
+  => RM a m -> m (RMState a m)
+exec' rm = do
+  (rs@(RMState _ _ h _ regs), rm) <- runStateT eval1S rm
+  if h then return rs else exec' rm

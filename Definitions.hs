@@ -9,6 +9,7 @@ import           Data.Array (Array)
 import qualified Data.Array as A
 import qualified Data.Map as M
 import qualified Data.Set as S
+import           Data.Array.IO (IOArray)
 import           Data.Array.ST (MArray, STArray)
 import qualified Data.Array.ST as MA
 import           Data.Foldable (toList)
@@ -145,3 +146,7 @@ initRM rmCode@(RMCode code) args = do
 -- | "initRM" with "STArray".
 initRMST :: RMCode -> [Integer] -> ST s (RM (STArray s) (ST s))
 initRMST = initRM
+
+-- | "initRM" with "IOArray".
+initRMIO :: RMCode -> [Integer] -> IO (RM IOArray IO)
+initRMIO = initRM
