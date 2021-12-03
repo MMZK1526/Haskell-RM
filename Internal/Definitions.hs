@@ -25,8 +25,8 @@ data Line = P Int Int | M Int Int Int | H
 
 instance Show Line where
   show H          = "ARRÊT"
-  show (P r l)    = "R" ++ show r ++ " L" ++ show l
-  show (M r l l') = "R" ++ show r ++ " L" ++ show l ++ " L" ++ show l'
+  show (P r l)    = "R" ++ show r ++ "+ " ++ show l
+  show (M r l l') = "R" ++ show r ++ "- " ++ show l ++ " " ++ show l'
 
 -- | The code of a RM consisting of a bunch of "Line"s.
 newtype RMCode = RMCode (Array Int Line)
@@ -34,7 +34,7 @@ newtype RMCode = RMCode (Array Int Line)
 
 instance Show RMCode where
   show (RMCode arr) =
-    tail $ foldr (\(i, l) l' -> "\nL" ++ show i ++ ": " ++ l ++ l') "" $
+    tail $ foldr (\(i, l) l' -> "\n" ++ show i ++ ": " ++ l ++ l') "" $
                  zip [0..] $ show <$> toList arr
 
 -- | Gets the number of registers from "RMCode".

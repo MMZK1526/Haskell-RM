@@ -7,6 +7,7 @@ import           Internal.LineLike
 import           Internal.Parser
 import           Internal.RM
 import           Internal.RMCode
+import           Internal.Utilities
 import           System.Environment
 import           Text.Read
 
