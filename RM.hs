@@ -31,7 +31,7 @@ evalRM = (head .) . runRM
 runRMIO :: RMCode -> [Integer] -> IO [Integer]
 runRMIO rmCode args =  do
   rm               <- initRMIO rmCode args
-  RMState' _ regs <- execIO rm 0
+  RMState' _ regs <- execIO rm 1
   init . toList <$> (MA.freeze :: IOArray Int a -> IO (Array Int a)) regs
   where
     execIO rm i = do
@@ -58,7 +58,7 @@ eval1S = do
       then halt
       else do
         lift (MA.adjust' regs (+ 1) n) >> put (RM' code regs i)
-        return $ RMState c pc h cy regs
+        return $ RMState c i h cy regs
     M n i j -> if n >= c
       then halt
       else do
@@ -66,11 +66,11 @@ eval1S = do
         if   x == 0
         then do
           put (RM' code regs j)
-          return $ RMState c pc h cy regs
+          return $ RMState c j h cy regs
         else do
           lift $ regs MA.=: n $ x `seq` (x - 1)
           put (RM' code regs i)
-          return $ RMState c pc h cy regs
+          return $ RMState c i h cy regs
     H       -> halt
 
 -- | Evaluate the given "RM" by one cycle.

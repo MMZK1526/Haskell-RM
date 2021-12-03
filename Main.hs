@@ -2,6 +2,8 @@ module Main where
 
 import           Definitions
 import           Gadgets.IO
+import           Line
+import           LineLike
 import           Parser
 import           RM
 import           RMCode
@@ -127,6 +129,8 @@ collatz = fromList
   , H
   ]
   
+
+-- TEMP
 testP :: RMCode
 testP = code
   where
@@ -136,3 +140,16 @@ testP = code
                           \L3: R1- L5 L4\n\
                           \L4: HALT\n\
                           \L5: R0+ L0"
+
+-- TEMP
+foo :: RMCode
+foo = code
+  where
+    Right code = rmParser "L0: R1 L1\n\
+                          \L1: R1 L2 L8\n\
+                          \L2: R0 L3\n\
+                          \L3: R0 L4\n\
+                          \L4: R0 L5\n\
+                          \L5: R0 L6\n\
+                          \L6: R0 L7\n\
+                          \L7: R0 L1"
