@@ -15,4 +15,3 @@ instance LineLike Line where
 instance LineLike Integer where
   toLine   = decodeLine
   fromLine = encodeLine
-
