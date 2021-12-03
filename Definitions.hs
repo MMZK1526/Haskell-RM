@@ -131,8 +131,8 @@ pattern RM' code regs pc <- RM (RMCode code) (RMState _ pc _ _ regs)
                               (RMState (argc rmCode) pc False cycle regs)
 
 -- | Builds "RM" from "RMCode" and a list of arguments with pc = 0.
-initRM :: forall m a. MArray a Integer m => RMCode -> [Integer] -> m (RM a m)
-initRM rmCode@(RMCode code) args = do
+initRM0 :: forall m a. MArray a Integer m => RMCode -> [Integer] -> m (RM a m)
+initRM0 rmCode@(RMCode code) args = do
   let c  = argc rmCode - 1
   let as = 0 : take c args ++ replicate (c - length args) 0
   argArr <- MA.fromList as :: m (a Int Integer)
@@ -143,10 +143,10 @@ initRM rmCode@(RMCode code) args = do
       code' = A.fromList $ toList code ++ 
         replicate (linec rmCode - length code) H
 
--- | "initRM" with "STArray".
-initRMST :: RMCode -> [Integer] -> ST s (RM (STArray s) (ST s))
-initRMST = initRM
+-- | "initRM0" with "STArray".
+initRMST0 :: RMCode -> [Integer] -> ST s (RM (STArray s) (ST s))
+initRMST0 = initRM0
 
--- | "initRM" with "IOArray".
-initRMIO :: RMCode -> [Integer] -> IO (RM IOArray IO)
-initRMIO = initRM
+-- | "initRM0" with "IOArray".
+initRMIO0 :: RMCode -> [Integer] -> IO (RM IOArray IO)
+initRMIO0 = initRM0

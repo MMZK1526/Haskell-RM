@@ -15,22 +15,26 @@ import qualified Data.Array.ST as MA
 import           Data.Foldable (toList)
 import           Definitions
 import qualified Gadgets.Array.Mutable as MA
+import           Gadgets.IO
 
 -- | Run the given RMCode with the given list of arguments, returns the list of
 -- registers on termination (where r0 is the result).
-runRM :: RMCode -> [Integer] -> [Integer]
-runRM rmCode args = runST $ do
-  rm               <- initRMST rmCode args
+runRM0 :: RMCode -> [Integer] -> [Integer]
+runRM0 rmCode args = runST $ do
+  rm              <- initRMST0 rmCode args
   RMState' _ regs <- exec' rm
   init . toList <$> (MA.freeze :: STArray s Int a -> ST s (Array Int a)) regs
 
--- | Run the given RMCode with the given list of arguments, returns the answer.
-evalRM :: RMCode -> [Integer] -> Integer
-evalRM = (head .) . runRM
+-- | Runs the given RMCode with the given list of arguments, returns the 
+-- answer.
+evalRM0 :: RMCode -> [Integer] -> Integer
+evalRM0 = (head .) . runRM0
 
-runRMIO :: RMCode -> [Integer] -> IO [Integer]
-runRMIO rmCode args =  do
-  rm               <- initRMIO rmCode args
+-- | Runs the given RMCode with the given list of arguments, returns the answer
+-- and prints each steps.
+runRMIO0 :: RMCode -> [Integer] -> IO [Integer]
+runRMIO0 rmCode args =  do
+  rm              <- initRMIO0 rmCode args
   RMState' _ regs <- execIO rm 1
   init . toList <$> (MA.freeze :: IOArray Int a -> IO (Array Int a)) regs
   where
@@ -39,7 +43,8 @@ runRMIO rmCode args =  do
       regs <- (MA.freeze :: IOArray Int a -> IO (Array Int a)) regs
       putStrLn $ "Step " ++ show i ++ ": " 
       putStrLn $ "PC: " ++ show pc
-      putStrLn $ "Regs: " ++ show (toList regs)
+      putStrLn $ "Regs: " ++ show (A.assocs regs)
+      putLn
       if h then return rs else execIO rm $ i + 1
 
 -- | Evaluate the given "RM" by one step.

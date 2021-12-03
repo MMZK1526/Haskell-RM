@@ -29,7 +29,7 @@ main = do
     Right code -> do
     case mapM (readMaybe :: String -> Maybe Integer) args of
       Nothing   -> putStrLn "Error parsing the arguments!"
-      Just args -> print $ evalRM code args -- Run the program
+      Just args -> print $ evalRM0 code args -- Run the program
 
 --------------------------------------------------------------------------------
 -- Examples

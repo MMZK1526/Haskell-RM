@@ -4,7 +4,6 @@ import           Control.Monad (void, liftM2, zipWithM, (>=>))
 import           Data.Bifunctor (first)
 import qualified Data.Map as M
 import           Data.Maybe (fromMaybe)
-import           Data.Tuple (swap)
 import           Definitions
 import qualified Gadgets.Array as A
 import           Text.Parsec
@@ -33,9 +32,9 @@ data RawGadget
   deriving Show
 
 -- | Gadget signature: name, input registers, and returning labels.
--- Indexed with negative integers.
+-- Mapped to negative integers.
 data Signature
-  = Sig_ String (M.Map Int String) (M.Map Int String)
+  = Sig_ String (M.Map String Int) (M.Map String Int)
   deriving Show
 
 data RawRMCode
@@ -92,8 +91,8 @@ parseGadget = do
       name <- parseAlphaNum
       eatSpaces
       char '('
-      args <- M.fromList . fmap swap . M.toList <$> parseArgs (-1)
-      rets <- M.fromList . fmap swap . M.toList <$> parseRets (-1)
+      args <- parseArgs (-1)
+      rets <- parseRets (-1)
       eatSpaces
       char ':'
       eatSpaces
@@ -106,7 +105,7 @@ parseGadget = do
       if   a `M.member` as
       then fail $ "Duplicate argument " ++ a ++ "!"
       else return $ M.insert a i as
-    parseRets i    = do
+    parseRets i   = do
       eatSpaces
       (char ')' >> return M.empty) <|> do
       r  <- parseAlphaNum
@@ -140,6 +139,7 @@ rmParser = first show <$> parse parseRM "RMCode: " >=> fromRawRMCode
 fromRawRMCode :: RawRMCode -> Either String RMCode
 fromRawRMCode (RMCode_ table ls) = RMCode . A.fromList <$> zipWithM go [0..] ls
   where
+    len    = length ls
     go i l = case l of
       P_ x y   -> if x < 0
         then Left $ "Negatively-indexed register at line " ++ show i ++ "!"
@@ -151,12 +151,7 @@ fromRawRMCode (RMCode_ table ls) = RMCode . A.fromList <$> zipWithM go [0..] ls
     fetch _ (Left n) = return n
     fetch i (Right str)
       | str `M.member` table = return $ table M.! str
-      | otherwise            = Left $ concat [ "Invalid label "
-                                             , str
-                                             , " at line "
-                                             , show i
-                                             , "!"
-                                             ]
+      | otherwise            = return len
 
 -- | Parses a "RawRMCode".
 parseRM :: Parser RawRMCode
