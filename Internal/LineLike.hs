@@ -1,7 +1,7 @@
-module LineLike where
+module Internal.LineLike where
 
-import           Definitions
-import           Line
+import           Internal.Definitions
+import           Internal.Line
 
 -- | A type class whose instances can be transformed to a "Line".
 class LineLike l where

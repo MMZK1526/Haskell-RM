@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Definitions where
+module Internal.Definitions where
 
 import           Data.Array (Array)
 import qualified Data.Array as A

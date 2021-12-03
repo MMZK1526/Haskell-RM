@@ -1,15 +1,14 @@
 module Main where
 
-import           Definitions
 import           Gadgets.IO
-import           Line
-import           LineLike
-import           Parser
-import           RM
-import           RMCode
+import           Internal.Definitions
+import           Internal.Line
+import           Internal.LineLike
+import           Internal.Parser
+import           Internal.RM
+import           Internal.RMCode
 import           System.Environment
 import           Text.Read
-
 
 {-# INLINE help #-}
 help :: IO ()
@@ -21,7 +20,7 @@ main = do
   if      null args
   then    help
   else do
-  (file : args) <- return args
+  file : args <- return args
   handleDNE ((>> help) . print) $ do
   text <- readFile file
   case rmParser text of

@@ -1,11 +1,11 @@
-module Parser where
+module Internal.Parser where
 
 import           Control.Monad (void, liftM2, zipWithM, (>=>))
 import           Data.Bifunctor (first)
 import qualified Data.Map as M
 import           Data.Maybe (fromMaybe)
-import           Definitions
 import qualified Gadgets.Array as A
+import           Internal.Definitions
 import           Text.Parsec
   ( alphaNum, char, digit, eof, letter, oneOf, parse, string, many, noneOf
   , try, (<|>)

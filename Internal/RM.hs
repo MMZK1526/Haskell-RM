@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module RM where
+module Internal.RM where
 
 import           Control.Monad (forM, forM_)
 import           Control.Monad.ST (ST, runST)
@@ -13,9 +13,9 @@ import qualified Data.Array as A
 import           Data.Array.ST (MArray, STArray)
 import qualified Data.Array.ST as MA
 import           Data.Foldable (toList)
-import           Definitions
 import qualified Gadgets.Array.Mutable as MA
 import           Gadgets.IO
+import           Internal.Definitions
 
 -- | Run the given RMCode with the given list of arguments, returns the list of
 -- registers on termination (where r0 is the result).

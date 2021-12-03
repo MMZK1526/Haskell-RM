@@ -1,7 +1,7 @@
-module Line where
+module Internal.Line where
 
-import           Definitions
-import           Utilities
+import           Internal.Definitions
+import           Internal.Utilities
 
 decodeLine :: Integer -> Line
 decodeLine 0 = H

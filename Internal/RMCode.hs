@@ -1,11 +1,10 @@
-module RMCode where
+module Internal.RMCode where
 
-import           Definitions
 import qualified Data.Foldable as F
 import qualified Gadgets.Array as A
-import           Line
-import           LineLike
-import           Utilities
+import           Internal.Definitions
+import           Internal.LineLike
+import           Internal.Utilities
 
 fromList :: LineLike l => [l] -> RMCode
 fromList = RMCode . A.fromList . fmap toLine

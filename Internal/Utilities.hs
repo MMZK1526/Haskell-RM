@@ -1,4 +1,4 @@
-module Utilities where
+module Internal.Utilities where
 
 import           Data.List (unfoldr)
 import qualified Gadgets.Array as A
