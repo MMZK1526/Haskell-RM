@@ -18,16 +18,15 @@ help = putStrLn "Please pass in the path of the source code and the arguments!"
 main :: IO ()
 main = do
   args <- getArgs
-  if      null args
-  then    help
+  if   null args
+  then help
   else do
   file : args <- return args
   handleDNE ((>> help) . print) $ do
   text <- readFile file
   case rmParser text of
     Left error -> print error -- Error parsing source code
-    Right code -> do
-    case mapM (readMaybe :: String -> Maybe Integer) args of
+    Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
       Nothing   -> putStrLn "Error parsing the arguments!"
       Just args -> print $ evalRM0 code args -- Run the program
 
@@ -128,28 +127,3 @@ collatz = fromList
   , P 0 22
   , H
   ]
-  
-
--- TEMP
-testP :: RMCode
-testP = code
-  where
-    Right code = rmParser "L0: R1- L2 L1\n\
-                          \L1: HALT\n\
-                          \L2: R1- L3 L4\n\
-                          \L3: R1- L5 L4\n\
-                          \L4: HALT\n\
-                          \L5: R0+ L0"
-
--- TEMP
-foo :: RMCode
-foo = code
-  where
-    Right code = rmParser "L0: R1 L1\n\
-                          \L1: R1 L2 L8\n\
-                          \L2: R0 L3\n\
-                          \L3: R0 L4\n\
-                          \L4: R0 L5\n\
-                          \L5: R0 L6\n\
-                          \L6: R0 L7\n\
-                          \L7: R0 L1"

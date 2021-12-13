@@ -4,6 +4,7 @@
 module Internal.RM where
 
 import           Control.Monad (forM, forM_)
+import           Control.Monad.Fail (MonadFail)
 import           Control.Monad.ST (ST, runST)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.State (StateT(..), get, gets, put)
