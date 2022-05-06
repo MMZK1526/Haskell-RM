@@ -7,6 +7,7 @@ module Internal.Definitions where
 
 import           Data.Array (Array)
 import qualified Data.Array as A
+import           Data.Bifunctor (first)
 import qualified Data.Map as M
 import qualified Data.Set as S
 import           Data.Array.IO (IOArray)
@@ -56,27 +57,27 @@ linec (RMCode code) = max (length code) $ 1 + maximum (go <$> code)
 -- | Cycles in a RM code (formed by plus-statements and the main branch of
 -- minus-statements).
 --
--- It is an array which elements are lists of pairs of "Int" and pairs of 
--- "Integer"s. Each pair contains the register modified in the cycle with the 
+-- It is an array which elements are lists of pairs of "Int" and pairs of
+-- "Integer"s. Each pair contains the register modified in the cycle with the
 -- pair of its net increment and its largest decrement within the cycle.
 --
--- If the current value of the register is no lesser than the third element, 
--- it can survive the entire cycle, so we can just go throught the cycle and 
+-- If the current value of the register is no lesser than the third element,
+-- it can survive the entire cycle, so we can just go throught the cycle and
 -- add with the second element.
-type RMCycle = Array Int [(Int, (Integer, Integer))]
+type RMCycle = Array Int (Int, [(Int, (Integer, Integer))])
 
 -- Gets the cycle of a "RMCode".
 getCycle :: RMCode -> RMCycle
 getCycle rmCode@(RMCode code) = runST $ do
   let (_, sup) = A.bounds code
   setST <- STA.fromList $ replicate (sup + 1) False
-  arrST <- STA.fromList $ replicate (sup + 1) []
+  arrST <- STA.fromList $ replicate (sup + 1) (0, [])
   forM_ [0..sup] $ \i -> do
     let cycle = go i i S.empty M.empty
     forM_ (fst cycle) $ \i' -> do
       isSet <- setST MA.! i'
       unless isSet $ do
-        arrST MA.=: i' $ snd cycle
+        arrST MA.=: i' $ first length cycle
         setST MA.=: i' $ True
   MA.freeze arrST
   where
@@ -91,23 +92,29 @@ getCycle rmCode@(RMCode code) = runST $ do
                           (M.insertWith merge n (-1, -1) map)
         H       -> (S.empty, [])
 
--- | The state of a RM.
+-- | The state of a RM under execution.
 -- Holding the number of registers, the value of each registers, the cycles,
--- the program counter, and if it has reached a halting configuration.
+-- the program counter, the number of steps, and if it has reached a halting
+-- configuration.
 --
 -- Note that the state is represented by a mutable array, so this data
 -- structure is only useful under the monad "m".
 data RMState a m
   =  MArray a Integer m
-  => RMState Int Int Bool RMCycle (a Int Integer)
+  => RMState Int Int Int Bool RMCycle (a Int Integer)
+
+-- | The result snapshot of a RM.
+data RMResult = RMResult { resRegs  :: [Integer]
+                         , resPC    :: Int
+                         , resSteps :: Int }
 
 type RMStateST s = RMState (STArray s) (ST s)
 
-pattern RMState' :: MArray a Integer m => Int -> a Int Integer -> RMState a m
-pattern RMState' pc regs <- RMState _ pc _ _ regs
+pattern RMState' :: MArray a Integer m => Int -> Int -> a Int Integer -> RMState a m
+pattern RMState' pc c regs <- RMState _ pc c _ _ regs
 
 -- Contructing a "RMState" under the "ST" monad.
-rmStateST :: Int -> Int -> Bool -> RMCycle -> STArray s Int Integer 
+rmStateST :: Int -> Int -> Int -> Bool -> RMCycle -> STArray s Int Integer
   -> RMState (STArray s) (ST s)
 rmStateST = RMState
 
@@ -115,20 +122,19 @@ rmStateST = RMState
 data RM a m
   =  MArray a Integer m
   => RM { getCode     :: RMCode
-        , getRegState :: RMState a m
-        }
+        , getRegState :: RMState a m }
 
--- | A bidirectional pattern for "RM" that extracts the array in "RMCode" and 
+-- | A bidirectional pattern for "RM" that extracts the array in "RMCode" and
 -- the mutable array of register values in "RMState".
 pattern RM' :: MArray a Integer m
   => Array Int Line
-  -> a Int Integer -> Int -> RM a m
-pattern RM' code regs pc <- RM (RMCode code) (RMState _ pc _ _ regs)
+  -> a Int Integer -> Int -> Int -> RM a m
+pattern RM' code regs pc c <- RM (RMCode code) (RMState _ pc c _ _ regs)
   where
-    RM' code regs pc = let rmCode = RMCode code
-                           cycle  = getCycle rmCode
-                       in  RM rmCode 
-                              (RMState (argc rmCode) pc False cycle regs)
+    RM' code regs pc c = let rmCode = RMCode code
+                             cycle  = getCycle rmCode
+                         in  RM rmCode
+                                (RMState (argc rmCode) pc c False cycle regs)
 
 -- | Builds "RM" from "RMCode" and a list of arguments with pc = 0.
 initRM0 :: forall m a. MArray a Integer m => RMCode -> [Integer] -> m (RM a m)
@@ -137,10 +143,10 @@ initRM0 rmCode@(RMCode code) args = do
   let as = 0 : take c args ++ replicate (c - length args) 0
   argArr <- MA.fromList as :: m (a Int Integer)
   return $ if length code == linec rmCode
-    then RM' code argArr 0
-    else RM' code' argArr 0
+    then RM' code argArr 0 0
+    else RM' code' argArr 0 0
     where
-      code' = A.fromList $ toList code ++ 
+      code' = A.fromList $ toList code ++
         replicate (linec rmCode - length code) H
 
 -- | "initRM0" with "STArray".
