@@ -27,26 +27,34 @@ runRM rmCode args = runST $ do
   regs'              <- toList <$> freeze regs
   return $ RMResult regs' pc c
   where
-    freeze = MA.freeze :: STArray s Int a -> ST s (Array Int a)
+    freeze  = MA.freeze :: STArray s Int a -> ST s (Array Int a)
+    exec rm = do
+      (rs@(RMState _ _ _ h _ regs), rm) <- runStateT evalCycleS rm
+      if h then return rs else exec rm
 
--- | Runs the given RMCode with the given list of arguments (starting with r0),
--- returns the answer and prints each steps.
-runRMIO :: RMCode -> [Integer] -> IO RMResult
-runRMIO rmCode args =  do
-  rm                 <- initRMIO rmCode args
-  RMState' pc c regs <- execIO rm 1
-  regs'              <- toList <$> freeze regs
-  return $ RMResult regs' pc c
+-- | Runs the given  "RM". Returns the answer and prints each steps. Run at most
+-- "n" iterations.
+runRMIO :: RM IOArray IO -> (Int, Int) -> IO (RM IOArray IO, Maybe RMResult)
+runRMIO rm (s, n) = do
+  (rm, RMState _ pc c h _ regs) <- execIO rm s
+  if   h
+  then do
+    regs' <- toList <$> freeze regs
+    return (rm, Just $ RMResult regs' pc c)
+  else return (rm, Nothing)
   where
-    freeze      = MA.freeze :: IOArray Int a -> IO (Array Int a)
-    execIO rm i = do
-      (rs@(RMState _ pc c h _ regs), rm) <- runStateT eval1S rm
-      regs <- (MA.freeze :: IOArray Int a -> IO (Array Int a)) regs
-      putStrLn $ "Step " ++ show i ++ ": "
-      putStrLn $ "PC: " ++ show pc
-      putStrLn $ "Regs: " ++ show (A.assocs regs)
-      putLn
-      if h then return rs else execIO rm $ i + 1
+    freeze = MA.freeze :: IOArray Int a -> IO (Array Int a)
+    execIO rm i
+      | i == s + n = pure (rm, getRegState rm)
+      | otherwise  = do
+        let rs@(RMState _ pc c h _ regs) = getRegState rm
+        regs                               <- freeze regs
+        putStrLn $ "Step " ++ show i ++ ": "
+        putStrLn $ "PC: " ++ show pc
+        putStrLn $ "Regs: " ++ show (A.assocs regs)
+        putLn
+        (rs@(RMState _ pc c h _ regs), rm) <- runStateT eval1S rm
+        if h then return (rm, rs) else execIO rm $ i + 1
 
 -- | Evaluate the given "RM" by one step.
 eval1S :: forall m a. MonadFail m
@@ -101,19 +109,3 @@ evalCycleS = do
       let c'' = c' + fromIntegral cL * rounds
       modify (\s -> s { getRegState = RMState c pc c'' h cy regs })
       return $ RMState c pc c'' h cy regs
-
--- | Execute the RM until it halts with cycle-detection optimisation.
-exec :: forall m a. MonadFail m
-  => MArray a Integer m
-  => RM a m -> m (RMState a m)
-exec rm = do
-  (rs@(RMState _ _ _ h _ regs), rm) <- runStateT evalCycleS rm
-  if h then return rs else exec rm
-
--- | Naively Execute the RM until it halts without optimisation.
-exec' :: forall m a. MonadFail m
-  => MArray a Integer m
-  => RM a m -> m (RMState a m)
-exec' rm = do
-  (rs@(RMState _ _ _ h _ regs), rm) <- runStateT eval1S rm
-  if h then return rs else exec' rm

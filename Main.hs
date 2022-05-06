@@ -1,6 +1,7 @@
 module Main where
 
 import           Control.Monad
+import           Data.Char
 import           Gadgets.IO
 import           Internal.Definitions
 import           Internal.Line
@@ -13,16 +14,17 @@ import           System.Console.GetOpt
 import           System.Environment
 import           Text.Read
 
-data CLIOption = I0
+data CLIOption = I0 | Detail
   deriving (Eq, Show)
 
-data CLIConfig = CLIOptions { isI0 :: Bool }
+data CLIConfig = CLIOptions { isI0 :: Bool, detailSteps :: Int }
   deriving (Eq, Show)
 
 mkConfig :: [CLIOption] -> CLIConfig
-mkConfig = foldr go (CLIOptions { isI0 = False })
+mkConfig = foldr go (CLIOptions { isI0 = False, detailSteps = 0 })
   where
-    go I0 opts = opts { isI0 = True }
+    go I0 opts     = opts { isI0 = True }
+    go Detail opts = opts { detailSteps = 20 }
 
 {-# INLINE help #-}
 help :: IO ()
@@ -30,7 +32,8 @@ help = putStrLn "Please pass in the path of the source code and the arguments!"
 
 main :: IO ()
 main = do
-  (opts, rawArgs, _) <- getOpt Permute [Option "s" [] (NoArg I0) ""]
+  (opts, rawArgs, _) <- getOpt Permute [ Option "i" [] (NoArg I0) ""
+                                       , Option "s" [] (NoArg Detail) "" ]
                     <$> getArgs
   let config = mkConfig opts
   if   null rawArgs
@@ -46,14 +49,31 @@ main = do
         Just args -> if any (< 0) args -- Run the program
           then putStrLn "The arguments must be non-negative!"
           else do
-            let result = if isI0 config
-                  then runRM code args
-                  else runRM code (0 : args)
-            putStrLn $ "Execution finished after " ++ show (resSteps result)
-                    ++ if resSteps result == 1 then "step." else " steps."
-            putStrLn "Register values: "
-            forM_ (zip [0..] $ resRegs result) $ \(i, r) -> do
-              putStrLn $ "  R" ++ show i ++ ": " ++ show r
+            let args'     = if isI0 config then args else 0 : args
+            let step      = detailSteps config
+            let showRes r = do
+                  putStrLn $ "Execution finished after " 
+                          ++ show (resSteps r)
+                          ++ if resSteps r == 1 then "step." else " steps."
+                  putStrLn "Register values: "
+                  forM_ (zip [0..] $ resRegs r) $ \(i, r) -> do
+                    putStrLn $ "  R" ++ show i ++ ": " ++ show r
+            result <- if step == 0
+              then pure $ runRM code args'
+              else do
+                rm <- initRMIO code args'
+                let go i rm = do
+                      (rm, mResult) <- runRMIO rm (i, step)
+                      case mResult of
+                        Just r  -> pure r
+                        Nothing -> do
+                          l <- getLine
+                          case toLower <$> l of
+                            "q"    -> pure $ runRM code args'
+                            "quit" -> pure $ runRM code args'
+                            _      -> go (i + step) rm
+                go 1 rm
+            showRes result
 
 
 --------------------------------------------------------------------------------
