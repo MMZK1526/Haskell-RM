@@ -29,13 +29,15 @@ main = do
     Left error -> print error -- Error parsing source code
     Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
       Nothing   -> putStrLn "Error parsing the arguments!"
-      Just args -> do -- Run the program
-        let result = runRM0 code args
-        putStrLn $ "Execution finished after " ++ show (resSteps result)
-                ++ if resSteps result == 1 then "step." else " steps."
-        putStrLn "Register values: "
-        forM_ (zip [0..] $ resRegs result) $ \(i, r) -> do
-          putStrLn $ "  R" ++ show i ++ ": " ++ show r
+      Just args -> if any (< 0) args -- Run the program
+        then putStrLn "The arguments must be non-negative!"
+        else do
+          let result = runRM0 code args
+          putStrLn $ "Execution finished after " ++ show (resSteps result)
+                  ++ if resSteps result == 1 then "step." else " steps."
+          putStrLn "Register values: "
+          forM_ (zip [0..] $ resRegs result) $ \(i, r) -> do
+            putStrLn $ "  R" ++ show i ++ ": " ++ show r
 
 
 --------------------------------------------------------------------------------
