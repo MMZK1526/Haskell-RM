@@ -137,11 +137,12 @@ pattern RM' code regs pc c <- RM (RMCode code) (RMState _ pc c _ _ regs)
                          in  RM rmCode
                                 (RMState (argc rmCode) pc c False cycle regs)
 
--- | Builds "RM" from "RMCode" and a list of arguments with pc = 0.
-initRM0 :: forall m a. MArray a Integer m => RMCode -> [Integer] -> m (RM a m)
-initRM0 rmCode@(RMCode code) args = do
-  let c  = argc rmCode - 1
-  let as = 0 : take c args ++ replicate (c - length args) 0
+-- | Builds "RM" from "RMCode" and a list of arguments (starting with r0) with
+-- pc = 0.
+initRM :: forall m a. MArray a Integer m => RMCode -> [Integer] -> m (RM a m)
+initRM rmCode@(RMCode code) args = do
+  let c  = argc rmCode
+  let as = take c args ++ replicate (c - length args) 0
   argArr <- MA.fromList as :: m (a Int Integer)
   return $ if length code == linec rmCode
     then RM' code argArr 0 0
@@ -151,9 +152,9 @@ initRM0 rmCode@(RMCode code) args = do
         replicate (linec rmCode - length code) H
 
 -- | "initRM0" with "STArray".
-initRMST0 :: RMCode -> [Integer] -> ST s (RM (STArray s) (ST s))
-initRMST0 = initRM0
+initRMST :: RMCode -> [Integer] -> ST s (RM (STArray s) (ST s))
+initRMST = initRM
 
 -- | "initRM0" with "IOArray".
-initRMIO0 :: RMCode -> [Integer] -> IO (RM IOArray IO)
-initRMIO0 = initRM0
+initRMIO :: RMCode -> [Integer] -> IO (RM IOArray IO)
+initRMIO = initRM

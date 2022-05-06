@@ -9,8 +9,20 @@ import           Internal.Parser
 import           Internal.RM
 import           Internal.RMCode
 import           Internal.Utilities
+import           System.Console.GetOpt
 import           System.Environment
 import           Text.Read
+
+data CLIOption = I0
+  deriving (Eq, Show)
+
+data CLIConfig = CLIOptions { isI0 :: Bool }
+  deriving (Eq, Show)
+
+mkConfig :: [CLIOption] -> CLIConfig
+mkConfig = foldr go (CLIOptions { isI0 = False })
+  where
+    go I0 opts = opts { isI0 = True }
 
 {-# INLINE help #-}
 help :: IO ()
@@ -18,26 +30,30 @@ help = putStrLn "Please pass in the path of the source code and the arguments!"
 
 main :: IO ()
 main = do
-  args <- getArgs
-  if   null args
+  (opts, rawArgs, _) <- getOpt Permute [Option "s" [] (NoArg I0) ""]
+                    <$> getArgs
+  let config = mkConfig opts
+  if   null rawArgs
   then help
   else do
-  file : args <- return args
-  handleDNE ((>> help) . print) $ do
-  text <- readFile file
-  case rmParser text of
-    Left error -> print error -- Error parsing source code
-    Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
-      Nothing   -> putStrLn "Error parsing the arguments!"
-      Just args -> if any (< 0) args -- Run the program
-        then putStrLn "The arguments must be non-negative!"
-        else do
-          let result = runRM0 code args
-          putStrLn $ "Execution finished after " ++ show (resSteps result)
-                  ++ if resSteps result == 1 then "step." else " steps."
-          putStrLn "Register values: "
-          forM_ (zip [0..] $ resRegs result) $ \(i, r) -> do
-            putStrLn $ "  R" ++ show i ++ ": " ++ show r
+    file : args <- return rawArgs
+    handleDNE ((>> help) . print) $ do
+    text <- readFile file
+    case rmParser text of
+      Left error -> print error -- Error parsing source code
+      Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
+        Nothing   -> putStrLn "Error parsing the arguments!"
+        Just args -> if any (< 0) args -- Run the program
+          then putStrLn "The arguments must be non-negative!"
+          else do
+            let result = if isI0 config
+                  then runRM code args
+                  else runRM code (0 : args)
+            putStrLn $ "Execution finished after " ++ show (resSteps result)
+                    ++ if resSteps result == 1 then "step." else " steps."
+            putStrLn "Register values: "
+            forM_ (zip [0..] $ resRegs result) $ \(i, r) -> do
+              putStrLn $ "  R" ++ show i ++ ": " ++ show r
 
 
 --------------------------------------------------------------------------------
@@ -46,7 +62,7 @@ main = do
 
 -- | R0 = R1 + R2.
 adder :: RMCode
-adder = fromList 
+adder = fromList
   [ M 1 1 2
   , P 0 0
   , M 2 3 4

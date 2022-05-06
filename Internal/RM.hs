@@ -18,28 +18,31 @@ import qualified Gadgets.Array.Mutable as MA
 import           Gadgets.IO
 import           Internal.Definitions
 
--- | Run the given RMCode with the given list of arguments, returns the list of
--- registers on termination (where r0 is the result).
-runRM0 :: RMCode -> [Integer] -> RMResult
-runRM0 rmCode args = runST $ do
-  rm                 <- initRMST0 rmCode args
+-- | Run the given RMCode with the given list of arguments (starting with r0),
+-- returns the list of registers on termination (where r0 is the result).
+runRM :: RMCode -> [Integer] -> RMResult
+runRM rmCode args = runST $ do
+  rm                 <- initRMST rmCode args
   RMState' pc c regs <- exec rm
-  regs'              <- toList <$> (MA.freeze :: STArray s Int a -> ST s (Array Int a)) regs
-  return $ RMResult regs' pc c
-
--- | Runs the given RMCode with the given list of arguments, returns the answer
--- and prints each steps.
-runRMIO0 :: RMCode -> [Integer] -> IO RMResult
-runRMIO0 rmCode args =  do
-  rm                 <- initRMIO0 rmCode args
-  RMState' pc c regs <- execIO rm 1
-  regs'              <- toList <$> (MA.freeze :: IOArray Int a -> IO (Array Int a)) regs
+  regs'              <- toList <$> freeze regs
   return $ RMResult regs' pc c
   where
+    freeze = MA.freeze :: STArray s Int a -> ST s (Array Int a)
+
+-- | Runs the given RMCode with the given list of arguments (starting with r0),
+-- returns the answer and prints each steps.
+runRMIO :: RMCode -> [Integer] -> IO RMResult
+runRMIO rmCode args =  do
+  rm                 <- initRMIO rmCode args
+  RMState' pc c regs <- execIO rm 1
+  regs'              <- toList <$> freeze regs
+  return $ RMResult regs' pc c
+  where
+    freeze      = MA.freeze :: IOArray Int a -> IO (Array Int a)
     execIO rm i = do
       (rs@(RMState _ pc c h _ regs), rm) <- runStateT eval1S rm
       regs <- (MA.freeze :: IOArray Int a -> IO (Array Int a)) regs
-      putStrLn $ "Step " ++ show i ++ ": " 
+      putStrLn $ "Step " ++ show i ++ ": "
       putStrLn $ "PC: " ++ show pc
       putStrLn $ "Regs: " ++ show (A.assocs regs)
       putLn
@@ -89,7 +92,7 @@ evalCycleS = do
   if   null negs
   then eval1S
   else do
-    rounds <- fmap minimum $ 
+    rounds <- fmap minimum $
       forM negs $ \(r, (_, dec)) -> (`div` (-dec)) <$> lift (regs MA.! r)
     if   rounds == 0
     then eval1S
