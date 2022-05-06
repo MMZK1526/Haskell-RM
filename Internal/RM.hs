@@ -95,7 +95,7 @@ evalCycleS = do
     then eval1S
     else do
       forM_ cycle $ \(r, (net, _)) -> lift (MA.adjust' regs (+ rounds * net) r)
-      let c'' = c' + cL * fromIntegral rounds
+      let c'' = c' + fromIntegral cL * rounds
       modify (\s -> s { getRegState = RMState c pc c'' h cy regs })
       return $ RMState c pc c'' h cy regs
 

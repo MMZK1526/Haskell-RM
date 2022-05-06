@@ -101,21 +101,22 @@ getCycle rmCode@(RMCode code) = runST $ do
 -- structure is only useful under the monad "m".
 data RMState a m
   =  MArray a Integer m
-  => RMState Int Int Int Bool RMCycle (a Int Integer)
+  => RMState Int Int Integer Bool RMCycle (a Int Integer)
 
 -- | The result snapshot of a RM.
 data RMResult = RMResult { resRegs  :: [Integer]
                          , resPC    :: Int
-                         , resSteps :: Int }
+                         , resSteps :: Integer }
 
 type RMStateST s = RMState (STArray s) (ST s)
 
-pattern RMState' :: MArray a Integer m => Int -> Int -> a Int Integer -> RMState a m
+pattern RMState' :: MArray a Integer m => Int -> Integer -> a Int Integer
+                 -> RMState a m
 pattern RMState' pc c regs <- RMState _ pc c _ _ regs
 
 -- Contructing a "RMState" under the "ST" monad.
-rmStateST :: Int -> Int -> Int -> Bool -> RMCycle -> STArray s Int Integer
-  -> RMState (STArray s) (ST s)
+rmStateST :: Int -> Int -> Integer -> Bool -> RMCycle -> STArray s Int Integer
+          -> RMState (STArray s) (ST s)
 rmStateST = RMState
 
 -- | A "RMCode" with the current state of registers and program counter.
@@ -128,7 +129,7 @@ data RM a m
 -- the mutable array of register values in "RMState".
 pattern RM' :: MArray a Integer m
   => Array Int Line
-  -> a Int Integer -> Int -> Int -> RM a m
+  -> a Int Integer -> Int -> Integer -> RM a m
 pattern RM' code regs pc c <- RM (RMCode code) (RMState _ pc c _ _ regs)
   where
     RM' code regs pc c = let rmCode = RMCode code
