@@ -2,6 +2,7 @@ module Main where
 
 import           Control.Monad
 import           Data.Char
+import           Data.List
 import           Gadgets.IO
 import           Internal.Definitions
 import           Internal.Line
@@ -34,11 +35,15 @@ mkConfig = foldl go
 
 {-# INLINE help #-}
 help :: IO ()
-help = putStrLn "TODO: HELP"
+help = putStrLn "Usage: mmzkrm {<options>} <src_file.rm> {<arguments>}" >> putStrLn (usageInfo "Options:" optionTable)
 
 optionTable :: [OptDescr CLIOption]
-optionTable = [ Option "i" [] (NoArg I0) ""
-              , Option "s" ["step"] (OptArg intDef20 "") "" ] 
+optionTable = [ Option "i" [] (NoArg I0) "Starts the arguments from R0. By \
+                \default, R0 is 0 and the arguments are assigned to R1, R2..."
+              , Option "s" ["step"] (OptArg intDef20 "20") "Show the \
+                \configuration after each step of evaluation. \"--step=x\" \
+                \shows x steps at a time. Enter \"quit\" to jump to the \
+                \result." ] 
   where
     intDef20 Nothing    = Detail 20
     intDef20 (Just str) = case readMaybe str of
@@ -52,7 +57,7 @@ main = do
   (opts, rawArgs, _) <- getOpt Permute optionTable <$> getArgs
   let config = mkConfig opts
   if   null rawArgs || not (null $ errors config)
-  then forM_ (errors config) putStrLn >> help
+  then forM_ (nub $ errors config) putStrLn >> help
   else do
     file : args <- return rawArgs
     handleDNE ((>> help) . print) $ do
