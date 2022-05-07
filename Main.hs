@@ -52,7 +52,7 @@ main = do
             let args'     = if isI0 config then args else 0 : args
             let step      = detailSteps config
             let showRes r = do
-                  putStrLn $ "Execution finished after " 
+                  putStrLn $ "Execution finished after "
                           ++ show (resSteps r)
                           ++ if resSteps r == 1 then "step." else " steps."
                   putStrLn "Register values: "

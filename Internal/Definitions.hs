@@ -125,6 +125,11 @@ data RM a m
   => RM { getCode     :: RMCode
         , getRegState :: RMState a m }
 
+-- | Check if the "RM" has terminated.
+isRMTerminated :: MArray a Integer m => RM a m -> Bool
+isRMTerminated rm = let RMState _ _ _ h _ _ = getRegState rm in h
+{-# INLINE isRMTerminated #-}
+
 -- | A bidirectional pattern for "RM" that extracts the array in "RMCode" and
 -- the mutable array of register values in "RMState".
 pattern RM' :: MArray a Integer m

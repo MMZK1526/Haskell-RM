@@ -1,4 +1,4 @@
-module Convert 
+module Convert
   ( Line(..), LineLike(..), RMCode, decodeLine, decodeList, decodePair
   , decodeRM, encodeLine, encodeList, encodePair, encodeRM, fromList, toList
   ) where

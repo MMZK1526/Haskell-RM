@@ -179,7 +179,7 @@ parseLabel = try (Right <$> parseAlphaNum) <|> do
   void (char 'L') <|> return ()
   Left <$> parseInt
 
--- | Parses a single "LabelledLine" of code, taking a label table, the line 
+-- | Parses a single "LabelledLine" of code, taking a label table, the line
 -- number. Updates the table.
 parseLine :: LabelTable -> Int -> Parser (LabelTable, LabelledLine)
 parseLine table i = do
