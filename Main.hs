@@ -14,30 +14,45 @@ import           System.Console.GetOpt
 import           System.Environment
 import           Text.Read
 
-data CLIOption = I0 | Detail
+data CLIOption = I0 | Detail Int | Error String
   deriving (Eq, Show)
 
-data CLIConfig = CLIOptions { isI0 :: Bool, detailSteps :: Int }
+data CLIConfig = CLIOptions { isI0 :: Bool
+                            , detailSteps :: Maybe Int
+                            , errors :: [String] }
   deriving (Eq, Show)
 
 mkConfig :: [CLIOption] -> CLIConfig
-mkConfig = foldr go (CLIOptions { isI0 = False, detailSteps = 0 })
+mkConfig = foldl go
+         $ CLIOptions { isI0 = False, detailSteps = Nothing, errors = [] }
   where
-    go I0 opts     = opts { isI0 = True }
-    go Detail opts = opts { detailSteps = 20 }
+    go opts I0         = opts { isI0 = True }
+    go opts (Detail n) = case detailSteps opts of
+      Nothing -> opts { detailSteps = Just n }
+      _       -> opts
+    go opts (Error e)  = opts { errors = e : errors opts }
 
 {-# INLINE help #-}
 help :: IO ()
-help = putStrLn "Please pass in the path of the source code and the arguments!"
+help = putStrLn "TODO: HELP"
+
+optionTable :: [OptDescr CLIOption]
+optionTable = [ Option "i" [] (NoArg I0) ""
+              , Option "s" ["step"] (OptArg intDef20 "") "" ] 
+  where
+    intDef20 Nothing    = Detail 20
+    intDef20 (Just str) = case readMaybe str of
+      Nothing -> errMsg
+      Just n  -> if n > 0 then Detail n else errMsg
+      where
+        errMsg = Error "The argument for steps must be a positive integer!"
 
 main :: IO ()
 main = do
-  (opts, rawArgs, _) <- getOpt Permute [ Option "i" [] (NoArg I0) ""
-                                       , Option "s" [] (NoArg Detail) "" ]
-                    <$> getArgs
+  (opts, rawArgs, _) <- getOpt Permute optionTable <$> getArgs
   let config = mkConfig opts
-  if   null rawArgs
-  then help
+  if   null rawArgs || not (null $ errors config)
+  then forM_ (errors config) putStrLn >> help
   else do
     file : args <- return rawArgs
     handleDNE ((>> help) . print) $ do
@@ -50,17 +65,16 @@ main = do
           then putStrLn "The arguments must be non-negative!"
           else do
             let args'     = if isI0 config then args else 0 : args
-            let step      = detailSteps config
             let showRes r = do
                   putStrLn $ "Execution finished after "
                           ++ show (resSteps r)
                           ++ if resSteps r == 1 then "step." else " steps."
                   putStrLn "Register values: "
-                  forM_ (zip [0..] $ resRegs r) $ \(i, r) -> do
+                  forM_ (zip [0..] $ resRegs r) $ \(i, r) ->
                     putStrLn $ "  R" ++ show i ++ ": " ++ show r
-            result <- if step == 0
-              then pure $ runRM code args'
-              else do
+            result <- case detailSteps config of
+              Nothing   -> pure $ runRM code args'
+              Just step -> do
                 rm <- initRMIO code args'
                 let go i rm = do
                       (rm, mResult) <- runRMIO rm (i, step)

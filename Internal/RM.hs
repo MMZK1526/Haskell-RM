@@ -53,7 +53,8 @@ runRMIO rm (s, n) = do
         regs                               <- freeze regs
         putStrLn $ "Step " ++ show i ++ ": "
         putStrLn $ "PC: " ++ show pc
-        putStrLn $ "Regs: " ++ show (A.assocs regs)
+        forM_ (A.assocs regs) $ \(i, r) -> putStrLn $ "R" ++ show i 
+                                        ++ ": " ++ show r
         putLn
         rm <- execStateT eval1S rm
         if isRMTerminated rm then return (rm, True) else execIO rm $ i + 1
