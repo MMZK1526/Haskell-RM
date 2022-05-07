@@ -35,15 +35,19 @@ mkConfig = foldl go
 
 {-# INLINE help #-}
 help :: IO ()
-help = putStrLn "Usage: mmzkrm {<options>} <src_file.rm> {<arguments>}" >> putStrLn (usageInfo "Options:" optionTable)
+help = do
+  putStrLn "Usage: mmzkrm {<options>} <src_file.rm> {<arguments>}"
+  putStrLn "RM File Format: TODO"
+  putStrLn "Arguments: A list of non-negative positive integers assigned to \
+           \the registers, starting from R1; R0 is set to 0."
+  putStrLn (usageInfo "Options:" optionTable)
 
 optionTable :: [OptDescr CLIOption]
-optionTable = [ Option "i" [] (NoArg I0) "Starts the arguments from R0. By \
-                \default, R0 is 0 and the arguments are assigned to R1, R2..."
+optionTable = [ Option "i" [] (NoArg I0) "Starts the arguments from R0."
               , Option "s" ["step"] (OptArg intDef20 "20") "Show the \
                 \configuration after each step of evaluation. \"--step=x\" \
                 \shows x steps at a time. Enter \"quit\" to jump to the \
-                \result." ] 
+                \result." ]
   where
     intDef20 Nothing    = Detail 20
     intDef20 (Just str) = case readMaybe str of
