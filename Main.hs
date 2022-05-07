@@ -38,7 +38,7 @@ help :: IO ()
 help = do
   putStrLn "Usage: mmzkrm {<options>} <src_file.rm> {<arguments>}"
   putStrLn "RM File Format: TODO"
-  putStrLn "Arguments: A list of non-negative positive integers assigned to \
+  putStrLn "Arguments:\n  A list of non-negative positive integers assigned to \
            \the registers, starting from R1; R0 is set to 0."
   putStrLn (usageInfo "Options:" optionTable)
 
@@ -58,10 +58,11 @@ optionTable = [ Option "i" [] (NoArg I0) "Starts the arguments from R0."
 
 main :: IO ()
 main = do
-  (opts, rawArgs, _) <- getOpt Permute optionTable <$> getArgs
+  (opts, rawArgs, errs) <- getOpt Permute optionTable <$> getArgs
   let config = mkConfig opts
-  if   null rawArgs || not (null $ errors config)
-  then forM_ (nub $ errors config) putStrLn >> help
+  if   null rawArgs || not (null $ errs ++ errors config)
+  then forM_ errs putStr >> forM_ (nub (errors config)) putStrLn
+    >> putStrLn "" >> help
   else do
     file : args <- return rawArgs
     handleDNE ((>> help) . print) $ do
