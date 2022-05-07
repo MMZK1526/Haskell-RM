@@ -36,7 +36,7 @@ mkConfig = foldl go
 {-# INLINE help #-}
 help :: IO ()
 help = do
-  putStrLn "Usage: mmzkrm {<options>} <src_file.rm> {<arguments>}"
+  putStrLn "\nUsage: mmzkrm {<options>} <src_file.rm> {<arguments>}"
   putStrLn "RM File Format: TODO"
   putStrLn "Arguments:\n  A list of non-negative positive integers assigned to \
            \the registers, starting from R1; R0 is set to 0."
@@ -61,18 +61,17 @@ main = do
   (opts, rawArgs, errs) <- getOpt Permute optionTable <$> getArgs
   let config = mkConfig opts
   if   null rawArgs || not (null $ errs ++ errors config)
-  then forM_ errs putStr >> forM_ (nub (errors config)) putStrLn
-    >> putStrLn "" >> help
+  then forM_ errs putStr >> forM_ (nub (errors config)) putStrLn >> help
   else do
     file : args <- return rawArgs
     handleDNE ((>> help) . print) $ do
     text <- readFile file
     case rmParser text of
-      Left error -> print error -- Error parsing source code
+      Left error -> print error >> help -- Error parsing source code
       Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
-        Nothing   -> putStrLn "Error parsing the arguments!"
+        Nothing   -> putStrLn "Error parsing the arguments!" >> help
         Just args -> if any (< 0) args -- Run the program
-          then putStrLn "The arguments must be non-negative!"
+          then putStrLn "The arguments must be non-negative!" >> help
           else do
             let args'     = if isI0 config then args else 0 : args
             let showRes r = do
