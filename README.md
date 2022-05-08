@@ -6,7 +6,7 @@ If you haven't heard of register machines, see [Introduction](#Introduction) for
 
 For an example of using the CLI to read a Register Machine code from a file and evaluate it with given arguments, go to [Example](#Example).
 
-For the full CLI documentation, go to [MMZKRM](#MMZKRM).
+For the full CLI documentation, go to [CLI](#CLI).
 
 For the full API documentation, go to [Documentation](#Documentation).  
 
