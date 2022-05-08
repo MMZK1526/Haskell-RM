@@ -2,13 +2,13 @@
 
 A CLI that evaluates register machines efficiently in `Haskell`. It also provides an library defining and simulating register machines that can be embedded in Haskell code.
 
-If you haven't heard of register machines, see [Introduction](###Introduction) for a brief summary.  
+If you haven't heard of register machines, see [Introduction](#Introduction) for a brief summary.  
 
-For an example of using the CLI to read a Register Machine code from a file and evaluate it with given arguments, go to [Example](###Example).
+For an example of using the CLI to read a Register Machine code from a file and evaluate it with given arguments, go to [Example](#Example).
 
-For the full CLI documentation, go to [MMZKRM](##MMZKRM).
+For the full CLI documentation, go to [MMZKRM](#MMZKRM).
 
-For the full API documentation, go to [Documentation](##Documentation).  
+For the full API documentation, go to [Documentation](#Documentation).  
 
 ## Register Machine
 
@@ -44,7 +44,7 @@ Intriguingly, there is a **ONE TO ONE** correspondence between natural numbers a
 
 TODO
 
-In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](##Convert).
+In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
 
 ### Performance
 
@@ -68,9 +68,9 @@ Then the CLI can be compiled by running `ghc -O3 Main -o mmzkrm` from the root d
 
 ### Example
 
-To follow this example, make sure that `mmzkrm` is installed (see [installation](###Installation)). We assume that the executable has been moved to the system path, if you haven't done so, replace all occurrences of `mmzkrm` by the path to the executable.
+To follow this example, make sure that `mmzkrm` is installed (see [installation](#Installation)). We assume that the executable has been moved to the system path, if you haven't done so, replace all occurrences of `mmzkrm` by the path to the executable.
 
-The [collatz program](Examples/collatz.rm) is a RM source file that takes one input at R1 and calculates the length of the [Collatz Sequence](https://en.wikipedia.org/wiki/Collatz_conjecture) starting at the input up to the first 1. Each line consists of a label and an instruction which specifies the register, the operation on it (+/-), and the label(s) of the next instruction. See [syntax](###Syntax) for more information on the syntax of RM source files.
+The [collatz program](Examples/collatz.rm) is a RM source file that takes one input at R1 and calculates the length of the [Collatz Sequence](https://en.wikipedia.org/wiki/Collatz_conjecture) starting at the input up to the first 1. Each line consists of a label and an instruction which specifies the register, the operation on it (+/-), and the label(s) of the next instruction. See [syntax](#Syntax) for more information on the syntax of RM source files.
 
 Run `mmzkrm Examples/collatz.rm 65537` from the root directory to evaluate the length of the Collatz Sequence starting from 65537. The result is as following:
 
@@ -211,7 +211,7 @@ R2: 5
 
 ```
 
-By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The number of steps per output is configuable, see [options](###Options) for the details (as well as more options).
+By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The number of steps per output is configuable, see [options](#Options) for the details (as well as more options).
 
 ### Syntax
 
