@@ -4,7 +4,7 @@ A CLI that evaluates register machines efficiently in `Haskell`. It also provide
 
 If you haven't heard of register machines, see [Introduction](#Introduction) for a brief summary.  
 
-For an example of using the CLI to read a Register Machine code from a file and evaluate it with given arguments, go to [Example](#Example).
+For an example of using the CLI to read RM code from a file and evaluate it with given arguments, go to [Example](#Example).
 
 For the full CLI documentation, go to [CLI](#CLI).
 
@@ -40,9 +40,9 @@ Despite its first appearance, register machines are actually very powerful: the 
 
 ### Gödelisation
 
-Intriguingly, there is a **ONE TO ONE** correspondence between natural numbers and register machines. In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
+Intriguingly, there is a **ONE TO ONE** correspondence between natural numbers and register machines (Gödelisation). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
 
-TODO
+The foundation of Gödelisation
 
 In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
 
@@ -82,7 +82,7 @@ Register values:
   R2: 0
 ```
 
-Note that it takes more than half million steps to carry out the computation, thus it would be quite slow if naïvely implemented. However, this implementation finishes executing instantly.
+Note that it takes more than six million steps to carry out the computation, thus it would be quite slow if naïvely implemented. However, this implementation finishes executing instantly.
 
 We may also use the `-s` option to show the calculation step by step:
 
