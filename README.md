@@ -1,10 +1,10 @@
 # Haskell-RM
 
-A CLI that evaluates register machines efficiently in `Haskell`. Also provide an library defining and simulating register machines that can be embedded in Haskell code.
+A CLI that evaluates register machines efficiently in `Haskell`. It also provides an library defining and simulating register machines that can be embedded in Haskell code.
 
-The following is an example of using the CLI to read a Register Machine code from a file and evaluate it with given arguments. If you haven't heard of register machines, see [Introduction](###Introduction) for a brief summary.  
+If you haven't heard of register machines, see [Introduction](###Introduction) for a brief summary.  
 
-TODO
+For an example of using the CLI to read a Register Machine code from a file and evaluate it with given arguments, go to [Example](###Example).
 
 For the full CLI documentation, go to [MMZKRM](##MMZKRM).
 
@@ -51,6 +51,173 @@ In [Convert.hs](Convert.hs), there are several utility functions that can conver
 TODO
 
 ## CLI
+
+### Installation
+
+If you are using Mac OS with Intel chips (*i.e.* not the newer M1 chips), you can download the appropriate executable in [Executables](Executables). The executable works on at least macOS Catalina.
+Otherwise, you need to compile the CLI, which requires [ghc and cabal](https://www.haskell.org/cabal/).
+Once the Haskell environment is set up, make sure the packages `containers` and `parsec` are installed by running the following in the terminal:
+
+```bash
+  cabal update
+  cabal install --lib containers
+  cabal install --lib parsec
+```
+
+Then the CLI can be compiled by running `ghc -O3 Main -o mmzkrm` from the root directory. It is going to generate an executable called `mmzkrm`.
+
+### Example
+
+To follow this example, make sure that `mmzkrm` is installed (see [installation](###Installation)). We assume that the executable has been moved to the system path, if you haven't done so, replace all occurrences of `mmzkrm` by the path to the executable.
+
+The [collatz program](Examples/collatz.rm) is a RM source file that takes one input at R1 and calculates the length of the [Collatz Sequence](https://en.wikipedia.org/wiki/Collatz_conjecture) starting at the input up to the first 1. Each line consists of a label and an instruction which specifies the register, the operation on it (+/-), and the label(s) of the next instruction. See [syntax](###Syntax) for more information on the syntax of RM source files.
+
+Run `mmzkrm Examples/collatz.rm 65537` from the root directory to evaluate the length of the Collatz Sequence starting from 65537. The result is as following:
+
+```bash
+Execution finished after 6186333 steps.
+Register values: 
+  R0: 100
+  R1: 0
+  R2: 0
+```
+
+Note that it takes more than half million steps to carry out the computation, thus it would be quite slow if naïvely implemented. However, this implementation finishes executing instantly.
+
+We may also use the `-s` option to show the calculation step by step:
+
+```bash
+> mmzkrm Examples/collatz.rm 65537 -s
+Step 1: 
+PC: 0
+R0: 0
+R1: 65537
+R2: 0
+
+Step 2: 
+PC: 1
+R0: 0
+R1: 65536
+R2: 0
+
+Step 3: 
+PC: 2
+R0: 0
+R1: 65535
+R2: 0
+
+Step 4: 
+PC: 3
+R0: 0
+R1: 65536
+R2: 0
+
+Step 5: 
+PC: 4
+R0: 0
+R1: 65537
+R2: 0
+
+Step 6: 
+PC: 5
+R0: 0
+R1: 65536
+R2: 0
+
+Step 7: 
+PC: 6
+R0: 0
+R1: 65535
+R2: 0
+
+Step 8: 
+PC: 4
+R0: 0
+R1: 65535
+R2: 1
+
+Step 9: 
+PC: 5
+R0: 0
+R1: 65534
+R2: 1
+
+Step 10: 
+PC: 6
+R0: 0
+R1: 65533
+R2: 1
+
+Step 11: 
+PC: 4
+R0: 0
+R1: 65533
+R2: 2
+
+Step 12: 
+PC: 5
+R0: 0
+R1: 65532
+R2: 2
+
+Step 13: 
+PC: 6
+R0: 0
+R1: 65531
+R2: 2
+
+Step 14: 
+PC: 4
+R0: 0
+R1: 65531
+R2: 3
+
+Step 15: 
+PC: 5
+R0: 0
+R1: 65530
+R2: 3
+
+Step 16: 
+PC: 6
+R0: 0
+R1: 65529
+R2: 3
+
+Step 17: 
+PC: 4
+R0: 0
+R1: 65529
+R2: 4
+
+Step 18: 
+PC: 5
+R0: 0
+R1: 65528
+R2: 4
+
+Step 19: 
+PC: 6
+R0: 0
+R1: 65527
+R2: 4
+
+Step 20: 
+PC: 4
+R0: 0
+R1: 65527
+R2: 5
+
+
+```
+
+By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The number of steps per output is configuable, see [options](###Options) for the details (as well as more options).
+
+### Syntax
+
+TODO
+
+### Options
 
 TODO
 
