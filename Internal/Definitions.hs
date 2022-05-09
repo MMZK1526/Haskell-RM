@@ -34,9 +34,10 @@ newtype RMCode = RMCode (Array Int Line)
   deriving Eq
 
 instance Show RMCode where
-  show (RMCode arr) =
-    tail $ foldr (\(i, l) l' -> "\n" ++ show i ++ ": " ++ l ++ l') "" $
-                 zip [0..] $ show <$> toList arr
+  show (RMCode arr)
+    | null arr  = "[EMPTY MACHINE]"
+    | otherwise = tail $ foldr (\(i, l) l' -> "\n" ++ show i ++ ": " ++ l ++ l') 
+                               "" $ zip [0..] $ show <$> toList arr
 
 -- | Gets the number of registers from "RMCode".
 argc :: RMCode -> Int

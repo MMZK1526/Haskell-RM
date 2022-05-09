@@ -14,13 +14,13 @@ For the full API documentation, go to [Documentation](#Documentation).
 
 ### Introduction
 
-A Register Machine is a simple system involving a finite number of registers (each holding a natural number), a finite number of lines, and only three operations (increment, decrement and halt).  
+A Register Machine is a simple system involving a finite number of registers (each holding a natural number), a finite number of lines, and only three instructions (increment, decrement and halt).  
 
-An increment operation takes a register and a line number. It increments a the register and jumps to the given line.  
+An increment instruction takes a register and a line number. It increments a the register and jumps to the given line.  
 
-A decrement operation takes a register and two line numbers (say `m` and `n`). If the register is positive, it decrements the value and jumps to line `m`. Otherwise it jump to line `n` (without changing the register, which is still 0).  
+A decrement instruction takes a register and two line numbers (say `m` and `n`). If the register is positive, it decrements the value and jumps to line `m`. Otherwise it jump to line `n` (without changing the register, which is still 0).  
 
-A halt operation terminates the machine.  
+A halt instruction terminates the machine. If we jump to a line number that does not exist, it is treated as a halt instruction as well.
 
 Consider the following example:
 
@@ -34,7 +34,7 @@ Consider the following example:
 
 Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from line `0`; which decrements `R1` and goes to line `1`; which increments `R0` and goes back to line `0`; which goes to line `2` since `R1 = 0`; which decrements `R2` and goes to line `3`; which increments `R0` and goes to line `2`; which decrements `R2` and goes to line `3`; which increments `R0` and goes to line `2`; which goes to line `4` since `R2 = 0`; which halts with `R0 = 3`, `R1 = 0` and `R2 = 0`.
 
-If we treat `R0` as the result and the other registers as the input, then a Register Machine that has registers from `R0` to `Rn` is a partial function from $\mathbb N^n$ to $\mathbb N$. In our previous example, the function is `f(R1, R2) = R1 + R2`.  
+If we treat `R0` as the result and the other registers as the input, then a Register Machine that has registers from `R0` to `Rn` is a partial function from N^n to N (it is partial because the machine may not terminate, thus not providing any result). In our previous example, the function is `f(R1, R2) = R1 + R2`.  
 
 Despite its first appearance, Register Machines are actually very powerful: the system is Turing-complete. This means they are capable of basically whatever modern computers can do.
 
@@ -79,11 +79,38 @@ Finally, once we encode each line of a Register Machine into a number, we can th
 
 One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel number of `L([152, 1, 4576, 5, 0])`, a number larger than 10^1426.
 
+If we convert a natual number to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line number. This does not cause any problem, however, since we treat bad line numbers as Halt instructions.
+
 In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
 
 ### Computability
 
-TODO
+As mentioned earlier, a Register Machine with registers R0 to Rn can be treated as a partial function from N^n to N. In fact, the machine does not have to use exactly n + 1 registers. If it has less, then the rest of the inputs has no effect on the output; if it has more, the surplus registers are initialised to 0 and can be used as "scrap registers" during the computation. For example, the [collatz program](Examples/collatz.rm) takes one input (R1), but also uses a temporary register (R2) that is initialised to 0.
+
+For simplicity, let us consider the simplist case of n = 1. From now on, we use the term "function" for "partial functions from N to N".
+
+It is easy to see that there are infinitely many functions, but we are interested to see which of these functions are "computable", in other words, their results can be calculated via a finite step of instructions.
+
+Of course, such a definition is quite imprecise, as we have not yet defined what does "one instruction" mean. Since we are dealing with Register Machines, we can define "computable" more strictly as if the function can be implemented by a register machine. It is [equivalent](https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis) to other well-established definition of "computable".
+
+On first glance, we may believe that all functions are computable. This is, however, not the case. Thanks to [Gödelisation](#Gödelisation), we can prove so via Cantor's diagonal argument:
+
+We can list Register Machines by their corresponding Gödel number, *i.e.* `RM0`, `RM1` *etc.*, These machines all have corresponding functions that they implement, *i.e.* `F0`, `F1` *etc.*:
+
+Gödel number|Machine|Function
+-|-|-
+0|RM0|F0
+1|RM1|F1
+2|RM2|F2
+...|...|...
+
+Assume all functions are computable, then all functions must appear in the (countably infinite) table above. However, we can define a function `F` that does not appear in the table, thus leading to a contradiction. For any natural number n, we define `F(n) = 0` if `Fn(n)` is not defined, and leave `F(n)` undefined if `Fn(n)` is defined.
+
+For example, `RM0` contains no instruction, thus it does not change the input at all and `F0(0) = 0`. Similarly, `RM1` only contains one Halt instruction, thus `F1(1) = 0` as well (because the input is in R1 but the output is read from R0). However, `RM2` contains one line of `0: R0+ 0`, thus it will never terminate. By our definition of `F`, we would have `F(0)`, `F(1)` undefined and `F(2) = 0`.
+
+One can also verify that `F` is undefined for inputs 4, 5 and 7, `F(6) = 0`, `F(8) = 0`, and so on. Notably, `RM8` is the first Register Machine in the table that actually do something to R0 (it always returns 1), and `RM1090519040` is the first I could find that actually has different outcomess based on the input.
+
+By construction, `F` and `Fn` differs on their behaviours on input n, hence `F` is not in the table, contradiction.
 
 ### Performance
 
