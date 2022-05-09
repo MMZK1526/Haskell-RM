@@ -89,6 +89,11 @@ If we convert a natual  to a Register Machine, then most likely it will contain 
 
 In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural s. The documentation can be viewed [here](#Convert).
 
+
+### URM
+
+TODO
+
 ### Computability
 
 As mentioned earlier, a Register Machine with registers R0 to Rn can be treated as a partial function from N^n to N. In fact, the machine does not have to use exactly n + 1 registers. If it has less, then the rest of the inputs has no effect on the output; if it has more, the surplus registers are initialised to 0 and can be used as "scrap registers" during the computation. For example, the [collatz program](Examples/collatz.rm) takes one input (R1), but also uses a temporary register (R2) that is initialised to 0.
@@ -114,7 +119,7 @@ Assume all functions are computable, then all functions must appear in the (coun
 
 For example, `RM0` contains no instruction, thus it does not change the input at all and `F0(0) = 0`. Similarly, `RM1` only contains one Halt instruction, thus `F1(1) = 0` as well (because the input is in R1 but the output is read from R0). However, `RM2` contains one line of `0: R0+ 0`, thus it will never terminate. By our definition of `F`, we would have `F(0)`, `F(1)` undefined and `F(2) = 0`.
 
-One can also verify that `F` is undefined for inputs 4, 5 and 7, `F(6) = 0`, `F(8) = 0`, and so on. Notably, `RM8` is the first Register Machine in the table that actually do something to R0 (it always returns 1), and `RM1090519040` is the first I could find that actually has different outcomess based on the input.
+One can also verify that `F` is undefined for inputs 4, 5 and 7, `F(6) = 0`, `F(8) = 0`, and so on. Notably, `RM8` is the first Register Machine in the table that actually do something to R0 (it always returns 1), and `RM1090519040` is the first I could find that actually has different outcomes based on the input.
 
 By construction, `F` and `Fn` differs on their behaviours on input n, hence `F` is not in the table, contradiction.
 
@@ -180,13 +185,23 @@ L2: R1- L1 L3
 L3: R0- L2 L4
 ```
 
-Like `B`, `W` is also not computable, and the proof is also similar. Firstly, notice that if f(x) = y, then the Register Machine corresponding to f (if exists) must take at leat y steps to calculate the result, because the result is in R0 which starts with 0, but each step increment R0 by at most 1. In particular, we have `W(n) >= B(n)` for all n.
+Like `B`, `W` is also not computable, and the proof is similar. Firstly, notice that if f(x) = y, then the Register Machine corresponding to f (if exists) must take at leat y steps to calculate the result, because the result is in R0 which starts with 0, but each step increment R0 by at most 1. In particular, we have `W(n) >= B(n)` for all n.
 
 Let us refer back to the machine that has n + 2 lines and produces 2n. It takes 2n + 4 steps to execute: each line except the first is reached twice plus the final implicit Halt. Now assume `W` is computable by a machine `R` with `l` lines, using the same construction for `R'` in the Busy Beaver proof, we end up with a machine with 2l + 10 lines and 2(l + 7) + 2(2l + 10) + X + 2 steps of execution, where X is the number of steps for `R` with input 2l + 10. Therefore the number of steps for `R'` is at least `X + 1 >= W(2l + 10) + 1`. However, `W(2l + 10)` is by definition the upper bound of number of steps `R'` could take, contradiction.
 
-### Universal Register Machine
+It is time to discuss the famous Halting Problem. Simply speaking, we would like to know if a Register Machine would terminate under a given input. While we can easily "eye-ball" simple machines to know if it halts, there is no general algorithm that can determine ternimation for any Register Machines. In other words, the Halting Problem is undecidable.
 
-TODO
+We can define a function `H` that takes the list encoding of the Gödel number of a machine as well as a series of arguments, returning 1 if the input machine terminates with the input arguments, otherwise 0. Clearly, `H` is a total function.
+
+The most iconic proof for the incomputability of `H` introduces a wrapper around it and produces a contradiction. Here, however, we will prove that `H`, if computable, can be used to build a Register Machine for the Busy Beaver function `B`.
+
+For any natural number n, we can develop a Register Machine that generates the Gödel number of all n-line Register Machine such that the register indices are between 0 and n - 1 while the line numbers are between 0 and n. It is clear that all Register Machines with n lines are equivalent to one of these, because such machines can declare at most n registers, and all line numbers not between 0 and n - 1 have the same behaviour as line n (namely implicit Halt).
+
+We can imagine that such a machine is enormous, but it is feasible: one approach is to iterate through all numbers between 0 and M, then decode it piece by piece and check if the registers and line numbers are within the range, where M is the Gödel number of the machine with n lines of `R{n-1}- n n`.
+
+With this machine and the [URM](#URM), one can simulate the execution of the generated machines one by one, and return the largest R0 value in each simulation. There is one caveat, however, as the simulation would last forever if the corresponding machine does not terminate on input 0. But if we have a machine that solves the Halting Problem, we can use it to check for termination and ignore those that does not finish. In this way, we are effectively building a machine corresponding to `B`. Therefore, the Halting Problem function `H` is not computable.
+
+We will end this long section with a final remark on Wheezy Weavers. If a n-line Register Machine executes with more steps than `W(n)`, clearly it is not going to terminate. This not only gives us another proof on the incomputability of `W`, but also a stronger result: if a function `f` is greater than `W`, namely `f(n) > W(n)` for all n, then `f` is not computable. If not, we can run the machine for `f` first before simulating the exeuction with an extended URM that also keeps track of the number of steps. If the number is greater than `f(n)`, we can immediately determine that the machine does not terminate, which is impossible.
 
 ## CLI
 
