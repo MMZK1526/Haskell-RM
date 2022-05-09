@@ -1,8 +1,8 @@
 # Haskell-RM
 
-A CLI that evaluates register machines efficiently in `Haskell`. It also provides an library defining and simulating register machines that can be embedded in Haskell code.
+A CLI that evaluates Register Machines efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
-If you haven't heard of register machines, see [Introduction](#Introduction) for a brief summary.  
+If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 
 For an example of using the CLI to read RM code from a file and evaluate it with given arguments, go to [Example](#Example).
 
@@ -36,15 +36,54 @@ Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from line `0`; which decrements
 
 If we treat `R0` as the result and the other registers as the input, then a Register Machine that has registers from `R0` to `Rn` is a partial function from $\mathbb N^n$ to $\mathbb N$. In our previous example, the function is `f(R1, R2) = R1 + R2`.  
 
-Despite its first appearance, register machines are actually very powerful: the system is Turing-complete. This means they are capable of basically whatever modern computers can do.
+Despite its first appearance, Register Machines are actually very powerful: the system is Turing-complete. This means they are capable of basically whatever modern computers can do.
 
 ### Gödelisation
 
-Intriguingly, there is a **ONE TO ONE** correspondence between natural numbers and register machines (Gödelisation). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
+Intriguingly, there is a **ONE TO ONE** correspondence between natural numbers and Register Machines (Gödelisation). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
 
-The foundation of Gödelisation
+The foundation of Gödelisation lies in the following functions: let `F(x, y) = 2^x + (2y + 1)` and `f(x, y) = F(x, y) - 1`, it can be proven that the former is a bijection between pairs of natual numbers to positive numbers and the latter a bijection to natural numbers:
+
+f|F|(x, y)
+----|---|----
+0|1|(0, 0)
+1|2|(1, 0)
+2|3|(0, 1)
+3|4|(2, 0)
+4|5|(0, 2)
+5|6|(1, 1)
+6|7|(0, 3)
+7|8|(3, 0)
+8|9|(0, 4)
+
+With `F`, we can recursively define a function, `L`, that is a bijection between finite lists of natural numbers and singular natural numbers: `L([]) = 0; L(x : xs) = F(x, L(xs))`:
+
+L|xs|L|xs
+----|---|----|---
+0|[]|10|[1, 1]
+1|[0]|11|[0, 0, 1]
+2|[1]|12|[2, 0]
+3|[0, 0]|13|[0, 1, 0]
+4|[2]|14|[1, 0, 0]
+5|[0, 1]|15|[0, 0, 0, 0]
+6|[1, 0]|16|[4]
+7|[0, 0, 0]|17|[0, 3]
+8|[3]|18|[1, 2]
+9|[0, 2]|19|[0, 0, 2]
+
+There is a trick to "decode" a number to a list of numbers, namely expressing the number in binary form and count of number of zeros between ones from right to left. For example, 998 in binary is 1111100110, and if we count from the rightmost digit, it starts with 1 zero before reaching a one, then 0 zeros due to the consecutive ones, then 2 zeros, and so on. The result is then [1, 0, 2, 0, 0, 0, 0].
+
+With the functions `F` and `f`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register number `r` with a line number `l`, and we encode it with `F(2r, l)`; if it is a decrement, then it has a register number `r` with two line numbers `l1` and `l2`, and we encode it with `F(2r + 1, f(l1, l2))`.
+
+Finally, once we encode each line of a Register Machine into a number, we can then encode the list of numbers into a single number by `L`.
+
+One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel number of `L([152, 1, 4576, 5, 0])`, a number larger than 10^1426.
 
 In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
+
+### Computability
+
+TODO
 
 ### Performance
 
