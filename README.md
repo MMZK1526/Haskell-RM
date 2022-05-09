@@ -46,9 +46,9 @@ TODO
 
 ### Gödelisation
 
-Intriguingly, there is a ONE TO ONE correspondence between natural s and Register Machines (**Gödelisation**). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
+Intriguingly, there is a ONE TO ONE correspondence between natural number and Register Machines (**Gödelisation**). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
 
-The foundation of Gödelisation lies in the following functions: let `F(x, y) = 2^x + (2y + 1)` and `f(x, y) = F(x, y) - 1`, it can be proven that the former is a bijection between pairs of natual s to positive s and the latter a bijection to natural s:
+The foundation of Gödelisation lies in the following functions: let `F(x, y) = 2^x + (2y + 1)` and `f(x, y) = F(x, y) - 1`, it can be proven that the former is a bijection between pairs of natural number to positive number and the latter a bijection to natural number:
 
 f|F|(x, y)
 ----|---|----
@@ -62,7 +62,7 @@ f|F|(x, y)
 7|8|(3, 0)
 8|9|(0, 4)
 
-With `F`, we can recursively define a function, `L`, that is a bijection between finite lists of natural s and singular natural s: `L([]) = 0; L(x : xs) = F(x, L(xs))`:
+With `F`, we can recursively define a function, `L`, that is a bijection between finite lists of natural number and singular natural number: `L([]) = 0; L(x : xs) = F(x, L(xs))`:
 
 L|xs|L|xs
 ----|---|----|---
@@ -77,17 +77,17 @@ L|xs|L|xs
 8|[3]|18|[1, 2]
 9|[0, 2]|19|[0, 0, 2]
 
-There is a trick to "decode" a  to a list of s, namely expressing the  in binary form and count of  of zeros between ones from right to left. For example, 998 in binary is 1111100110, and if we count from the rightmost digit, it starts with 1 zero before reaching a one, then 0 zeros due to the consecutive ones, then 2 zeros, and so on. The result is then [1, 0, 2, 0, 0, 0, 0].
+There is a trick to "decode" a  to a list of numbers, namely expressing the  in binary form and count of  of zeros between ones from right to left. For example, 998 in binary is 1111100110, and if we count from the rightmost digit, it starts with 1 zero before reaching a one, then 0 zeros due to the consecutive ones, then 2 zeros, and so on. The result is then [1, 0, 2, 0, 0, 0, 0].
 
-With the functions `F` and `f`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register  `r` with a line  `l`, and we encode it with `F(2r, l)`; if it is a decrement, then it has a register  `r` with two line s `l1` and `l2`, and we encode it with `F(2r + 1, f(l1, l2))`.
+With the functions `F` and `f`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register  `r` with a line  `l`, and we encode it with `F(2r, l)`; if it is a decrement, then it has a register  `r` with two line numbers `l1` and `l2`, and we encode it with `F(2r + 1, f(l1, l2))`.
 
-Finally, once we encode each line of a Register Machine into a , we can then encode the list of s into a single  by `L`.
+Finally, once we encode each line of a Register Machine into a , we can then encode the list of number into a single  by `L`.
 
 One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel  of `L([152, 1, 4576, 5, 0])`, a  larger than 10^1426.
 
-If we convert a natual  to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line . This does not cause any problem, however, since we treat bad line s as Halt instructions.
+If we convert a natual  to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line . This does not cause any problem, however, since we treat bad line number as Halt instructions.
 
-In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural s. The documentation can be viewed [here](#Convert).
+In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural number. The documentation can be viewed [here](#Convert).
 
 ### URM
 
