@@ -77,7 +77,7 @@ main = do
             let showRes r = do
                   putStrLn $ "Execution finished after "
                           ++ show (resSteps r)
-                          ++ if resSteps r == 1 then "step." else " steps."
+                          ++ if resSteps r == 1 then " step." else " steps."
                   putStrLn "Register values: "
                   forM_ (zip [0..] $ resRegs r) $ \(i, r) ->
                     putStrLn $ "  R" ++ show i ++ ": " ++ show r

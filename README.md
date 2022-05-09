@@ -2,7 +2,7 @@
 
 By MMZK1526 *a.k.a.* Yìtáng Chén
 
-A CLI that evaluates Register Machines efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
+A CLI that evaluates **Register Machines** efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 
@@ -22,7 +22,7 @@ An increment instruction takes a register and a line . It increments a the regis
 
 A decrement instruction takes a register and two line s (say `m` and `n`). If the register is positive, it decrements the value and jumps to line `m`. Otherwise it jump to line `n` (without changing the register, which is still 0).  
 
-A halt instruction terminates the machine. If we jump to a line  that does not exist, it is treated as a halt instruction as well.
+A halt instruction terminates the machine. If we jump to a line that does not exist, it is treated as a halt instruction as well.
 
 Consider the following example:
 
@@ -46,7 +46,7 @@ TODO
 
 ### Gödelisation
 
-Intriguingly, there is a **ONE TO ONE** correspondence between natural s and Register Machines (Gödelisation). In other words, any natural  uniquely represents a Register Machine and *vice versa*.  
+Intriguingly, there is a ONE TO ONE correspondence between natural s and Register Machines (**Gödelisation**). In other words, any natural  uniquely represents a Register Machine and *vice versa*.  
 
 The foundation of Gödelisation lies in the following functions: let `F(x, y) = 2^x + (2y + 1)` and `f(x, y) = F(x, y) - 1`, it can be proven that the former is a bijection between pairs of natual s to positive s and the latter a bijection to natural s:
 
@@ -97,7 +97,7 @@ For simplicity, let us consider the simplist case of n = 1. From now on, we use 
 
 It is easy to see that there are infinitely many functions, but we are interested to see which of these functions are "computable", in other words, their results can be calculated via a finite step of instructions.
 
-Of course, such a definition is quite imprecise, as we have not yet defined what does "one instruction" mean. Since we are dealing with Register Machines, we can define "computable" more strictly as if the function can be implemented by a register machine. It is [equivalent](https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis) to other well-established definition of "computable".
+Of course, such a definition is quite imprecise, as we have not yet defined what does "one instruction" mean. Since we are dealing with Register Machines, we can define **computable** more strictly as if the function can be implemented by a register machine. It is [equivalent](https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis) to other well-established definition of "computable".
 
 On first glance, we may believe that all functions are computable. This is, however, not the case. Thanks to [Gödelisation](#Gödelisation), we can prove so via Cantor's diagonal argument:
 
@@ -124,7 +124,7 @@ Although almost all functions are not computable, it is not trivial to come up w
 
 For a Register Machine with n lines, it is natural to ask, what is the largest number it can produce?
 
-Strictly speaking, we start all registers from zero, and we want the result of R0 to be as large as possible. Such a machine is known as a Busy Beaver, and the objective is to find the best Busy Beaver with n lines for any natural number n. Define `B(n)` to be the maximum output of a Busy Beaver with n lines, clearly `B` is a function.
+Strictly speaking, we start all registers from zero, and we want the result of R0 to be as large as possible. Such a machine is known as a **Busy Beaver**, and the objective is to find the best Busy Beaver with n lines for any natural number n. Define `B(n)` to be the maximum output of a Busy Beaver with n lines, clearly `B` is a function.
 
 In general, it is very hard to find `B(n)` except for the very first couple of n values. `B(0) = 0` because there are no instructions to start with. `B(1) = 1`, which is realised by `0: R0+ 1`. Note that `0: R0+ 0` is not a Busy Beaver since it never terminates. Similarly, `B(n) = n` for n up to 4 (though it is less trivial to prove so). However, `B(5) = 6` as provided by the following Busy Beaver, while the proof is more complicated:
 
@@ -149,19 +149,44 @@ L5: R1- 2 6
 
 Despite its fascinating definition, the function `B` is not computable, therefore we can never find an algorithm - no matter how inefficient - to determine `B(n)` for any n. Its proof again uses *reductio ad absurdum*.
 
-Firstly, we can design a Busy Beaver with n + 3 lines that produces 2n similar to the construction of the `B(5)` machine above. Let us take any computable function `F`. Then it must have a corresponding Register Machine `R` with `l` lines. We can construct another Register Machine `R'` as following.
+Firstly, we can design a Busy Beaver with n + 2 lines that produces 2n similar to the construction of the `B(5)` machine above. Let us take any total computable function `F`. Then it must have a corresponding Register Machine `R` with `l` lines. We can construct another Register Machine `R'` as following.
 
-1. Utilise its first l + 9 = (l + 6) + 3 lines to put the number 2(l + 6) into R0 via the Busy Beaver decribed on the paragraph above.
+1. Utilise its first l + 7 = (l + 5) + 2 lines to put the number 2(l + 5) into R0 via the Busy Beaver decribed on the paragraph above.
 
 2. Use two lines to move R0 to R1. This is easy to construct.
 
-3. Use l lines to compute `F(2(l + 6)) = F(2l + 12)` in R0.
+3. Use l lines to compute `F(2(l + 5)) = F(2l + 10)` in R0.
 
 4. Use one line to increment R0 and terminates.
 
-By construction, `R'` is a Busy Beaver with 2l + 12 lines that produces the number `F(2l + 12) + 1`.
+By construction, `R'` is a Busy Beaver with 2l + 10 lines that produces the number `F(2l + 10) + 1`.
 
 Assume that `B` is computable, and that it takes `b` lines to implement it as a Register Machine. According to the argument above, there exists a Busy Beaver with 2b + 12 lines that produces `B(2b + 12) + 1`. However, by definition, `B(2b + 12)` is the maximum value that a Busy Beaver with 2b + 12 lines may produce, which leads to a contradiction.
+
+Before introducing the famous Halting Problem, let us look at a variation of Busy Beaver: we still initialise all registers with 0, but instead of trying to produce the largest number possible, this time we attempt to make our machine run with as many steps as possible. We call such machines **Wheezy Weavers**, and define `W(n)` as the most steps a n-line Wheezy Weaver can produce.
+
+For first few values of n, we have `W(0) = 1` (starting at line 0, but it does not exist, thus treated as a `HALT`), `W(1) = 2`, `W(2) = 3`, `W(3) = 6` and `W(4) = 11`. The last two are demonstrated with the following machines:
+
+```RM
+L0: R1+ L1
+L1: R0+ L2
+L2: R1- L1 L3
+```
+
+```RM
+L0: R1+ L1
+L1: R0+ L2
+L2: R1- L1 L3
+L3: R0- L2 L4
+```
+
+Like `B`, `W` is also not computable, and the proof is also similar. Firstly, notice that if f(x) = y, then the Register Machine corresponding to f (if exists) must take at leat y steps to calculate the result, because the result is in R0 which starts with 0, but each step increment R0 by at most 1. In particular, we have `W(n) >= B(n)` for all n.
+
+Let us refer back to the machine that has n + 2 lines and produces 2n. It takes 2n + 4 steps to execute: each line except the first is reached twice plus the final implicit Halt. Now assume `W` is computable by a machine `R` with `l` lines, using the same construction for `R'` in the Busy Beaver proof, we end up with a machine with 2l + 10 lines and 2(l + 7) + 2(2l + 10) + X + 2 steps of execution, where X is the number of steps for `R` with input 2l + 10. Therefore the number of steps for `R'` is at least `X + 1 >= W(2l + 10) + 1`. However, `W(2l + 10)` is by definition the upper bound of number of steps `R'` could take, contradiction.
+
+### Universal Register Machine
+
+TODO
 
 ## CLI
 

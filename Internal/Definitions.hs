@@ -36,20 +36,21 @@ newtype RMCode = RMCode (Array Int Line)
 instance Show RMCode where
   show (RMCode arr)
     | null arr  = "[EMPTY MACHINE]"
-    | otherwise = tail $ foldr (\(i, l) l' -> "\n" ++ show i ++ ": " ++ l ++ l') 
+    | otherwise = tail $ foldr (\(i, l) l' -> "\n" ++ show i ++ ": " ++ l ++ l')
                                "" $ zip [0..] $ show <$> toList arr
 
 -- | Gets the number of registers from "RMCode".
 argc :: RMCode -> Int
-argc (RMCode code) = 1 + maximum (go <$> code)
+argc (RMCode code) = 1 + foldr max 0 (go <$> code)
   where
-    go H         = -1
+    go H         = 0
     go (P i _)   = i
     go (M i _ _) = i
 
 -- | Gets the number of lines from "RMCode"
 linec :: RMCode -> Int
-linec (RMCode code) = max (length code) $ 1 + maximum (go <$> code)
+linec rmcode@(RMCode code) = max (length code)
+                           $ 1 + foldr max (-1) (go <$> code)
   where
     go H         = -1
     go (P _ j)   = j
