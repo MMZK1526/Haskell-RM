@@ -16,9 +16,9 @@ For the full API documentation, go to [Documentation](#Documentation).
 
 ### Introduction
 
-A Register Machine is a simple system involving a finite  of registers (each can hold a natural number), a finite  of lines, and only three instructions (increment, decrement and halt).  
+A Register Machine is a simple system involving a finite number of registers (each can hold a natural number), a finite number of lines, and only three instructions (increment, decrement and halt).  
 
-An increment instruction takes a register and a line . It increments a the register and jumps to the given line.  
+An increment instruction takes a register and a line. It increments a the register and jumps to the given line.  
 
 A decrement instruction takes a register and two line s (say `m` and `n`). If the register is positive, it decrements the value and jumps to line `m`. Otherwise it jump to line `n` (without changing the register, which is still 0).  
 
@@ -46,7 +46,7 @@ TODO
 
 ### Gödelisation
 
-Intriguingly, there is a ONE TO ONE correspondence between natural s and Register Machines (**Gödelisation**). In other words, any natural  uniquely represents a Register Machine and *vice versa*.  
+Intriguingly, there is a ONE TO ONE correspondence between natural s and Register Machines (**Gödelisation**). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
 
 The foundation of Gödelisation lies in the following functions: let `F(x, y) = 2^x + (2y + 1)` and `f(x, y) = F(x, y) - 1`, it can be proven that the former is a bijection between pairs of natual s to positive s and the latter a bijection to natural s:
 
@@ -89,7 +89,6 @@ If we convert a natual  to a Register Machine, then most likely it will contain 
 
 In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural s. The documentation can be viewed [here](#Convert).
 
-
 ### URM
 
 TODO
@@ -115,7 +114,7 @@ Gödel |Machine|Function
 2|RM2|F2
 ...|...|...
 
-Assume all functions are computable, then all functions must appear in the (countably infinite) table above. However, we can define a function `F` that does not appear in the table, thus leading to a contradiction. For any natural  n, we define `F(n) = 0` if `Fn(n)` is not defined, and leave `F(n)` undefined if `Fn(n)` is defined.
+Assume all functions are computable, then all functions must appear in the (countably infinite) table above. However, we can define a function `F` that does not appear in the table, thus leading to a contradiction. For any natural number n, we define `F(n) = 0` if `Fn(n)` is not defined, and leave `F(n)` undefined if `Fn(n)` is defined.
 
 For example, `RM0` contains no instruction, thus it does not change the input at all and `F0(0) = 0`. Similarly, `RM1` only contains one Halt instruction, thus `F1(1) = 0` as well (because the input is in R1 but the output is read from R0). However, `RM2` contains one line of `0: R0+ 0`, thus it will never terminate. By our definition of `F`, we would have `F(0)`, `F(1)` undefined and `F(2) = 0`.
 
@@ -201,6 +200,8 @@ We can imagine that such a machine is enormous, but it is feasible: one approach
 
 With this machine and the [URM](#URM), one can simulate the execution of the generated machines one by one, and return the largest R0 value in each simulation. There is one caveat, however, as the simulation would last forever if the corresponding machine does not terminate on input 0. But if we have a machine that solves the Halting Problem, we can use it to check for termination and ignore those that does not finish. In this way, we are effectively building a machine corresponding to `B`. Therefore, the Halting Problem function `H` is not computable.
 
+The [collatz program](Examples/collatz.rm) is a living example that witnesses the story of the undecidable Halting Problem. People believe that this machine terminates for all input, but it remains a conjecture. For more information on it can be found [here](#Example).
+
 We will end this long section with a final remark on Wheezy Weavers. If a n-line Register Machine executes with more steps than `W(n)`, clearly it is not going to terminate. This not only gives us another proof on the incomputability of `W`, but also a stronger result: if a function `f` is greater than `W`, namely `f(n) > W(n)` for all n, then `f` is not computable. If not, we can run the machine for `f` first before simulating the exeuction with an extended URM that also keeps track of the number of steps. If the number is greater than `f(n)`, we can immediately determine that the machine does not terminate, which is impossible.
 
 ## CLI
@@ -221,9 +222,9 @@ Then the CLI can be compiled by running `ghc -O3 Main -o mmzkrm` from the root d
 
 ### Example
 
-To follow this example, make sure that `mmzkrm` is installed (see [installation](#Installation)). We assume that the executable has been moved to the system path, if you haven't done so, replace all occurrences of `mmzkrm` by the path to the executable.
+To follow this example, make sure that `mmzkrm` is installed (see [Installation](#Installation)). We assume that the executable has been moved to the system path, if you haven't done so, replace all occurrences of `mmzkrm` by the path to the executable.
 
-The [collatz program](Examples/collatz.rm) is a RM source file that takes one input at R1 and calculates the length of the [Collatz Sequence](https://en.wikipedia.org/wiki/Collatz_conjecture) starting at the input up to the first 1. Each line consists of a label and an instruction which specifies the register, the operation on it (+/-), and the label(s) of the next instruction. See [syntax](#Syntax) for more information on the syntax of RM source files.
+The [collatz program](Examples/collatz.rm) is a RM source file that takes one input at R1 and calculates the length of the [Collatz Sequence](https://en.wikipedia.org/wiki/Collatz_conjecture) starting at the input up to the first 1. Each line consists of a label and an instruction which specifies the register, the operation on it (+/-), and the label(s) of the next instruction. See [Syntax](#Syntax) for more information on the syntax of RM source files.
 
 Run `mmzkrm Examples/collatz.rm 65537` from the root directory to evaluate the length of the Collatz Sequence starting from 65537. The result is as following:
 
@@ -235,7 +236,7 @@ Register values:
   R2: 0
 ```
 
-Note that it takes more than six million steps to carry out the computation, thus it would be quite slow if naïvely implemented. However, this implementation finishes executing instantly.
+Note that it takes more than six million steps to carry out the computation, thus it would be quite slow if naïvely implemented. However, this implementation finishes executing instantly (see [Performance](#Performance)).
 
 We may also use the `-s` option to show the calculation step by step:
 
@@ -444,4 +445,4 @@ TODO
   1: HALT
   ```  
 
-TODO: Evaluator example & documentation
+TODO: Other documentation
