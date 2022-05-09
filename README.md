@@ -16,7 +16,7 @@ For the full API documentation, go to [Documentation](#Documentation).
 
 ### Introduction
 
-A Register Machine is a simple system involving a finite  of registers (each holding a natural ), a finite  of lines, and only three instructions (increment, decrement and halt).  
+A Register Machine is a simple system involving a finite  of registers (each can hold a natural number), a finite  of lines, and only three instructions (increment, decrement and halt).  
 
 An increment instruction takes a register and a line . It increments a the register and jumps to the given line.  
 
@@ -119,13 +119,13 @@ Assume all functions are computable, then all functions must appear in the (coun
 
 For example, `RM0` contains no instruction, thus it does not change the input at all and `F0(0) = 0`. Similarly, `RM1` only contains one Halt instruction, thus `F1(1) = 0` as well (because the input is in R1 but the output is read from R0). However, `RM2` contains one line of `0: R0+ 0`, thus it will never terminate. By our definition of `F`, we would have `F(0)`, `F(1)` undefined and `F(2) = 0`.
 
-One can also verify that `F` is undefined for inputs 4, 5 and 7, `F(6) = 0`, `F(8) = 0`, and so on. Notably, `RM8` is the first Register Machine in the table that actually do something to R0 (it always returns 1), and `RM1090519040` is the first I could find that actually has different outcomes based on the input.
+One can also verify that `F` is undefined for inputs 3, 4, 5 and 7, `F(6) = 0`, `F(8) = 0`, and so on. Notably, `RM8` is the first Register Machine in the table that actually do something to R0 (it always returns 1), and `RM1090519040` is the first I could find that actually has different outcomes based on the input (*please try find me a smaller one*).
 
 By construction, `F` and `Fn` differs on their behaviours on input n, hence `F` is not in the table, contradiction.
 
-Although almost all functions are not computable, it is not trivial to come up with an example of incomputable functions (our `F` defined above is one of them). In the following sections, we will briefly discuss two other such examples.
+Although almost all functions are not computable, it is not trivial to come up with an example of incomputable functions (our `F` defined above is one of them). In the following sections, we will briefly discuss three (or more?) other such examples.
 
-### Busy Beaver & The Halting Problem
+### Busy Beaver, Wheezy Weaver & The Halting Problem
 
 For a Register Machine with n lines, it is natural to ask, what is the largest number it can produce?
 
@@ -189,7 +189,7 @@ Like `B`, `W` is also not computable, and the proof is similar. Firstly, notice 
 
 Let us refer back to the machine that has n + 2 lines and produces 2n. It takes 2n + 4 steps to execute: each line except the first is reached twice plus the final implicit Halt. Now assume `W` is computable by a machine `R` with `l` lines, using the same construction for `R'` in the Busy Beaver proof, we end up with a machine with 2l + 10 lines and 2(l + 7) + 2(2l + 10) + X + 2 steps of execution, where X is the number of steps for `R` with input 2l + 10. Therefore the number of steps for `R'` is at least `X + 1 >= W(2l + 10) + 1`. However, `W(2l + 10)` is by definition the upper bound of number of steps `R'` could take, contradiction.
 
-It is time to discuss the famous Halting Problem. Simply speaking, we would like to know if a Register Machine would terminate under a given input. While we can easily "eye-ball" simple machines to know if it halts, there is no general algorithm that can determine ternimation for any Register Machines. In other words, the Halting Problem is undecidable.
+It is time to discuss the famous **Halting Problem**. Simply speaking, we would like to know if a Register Machine would terminate under a given input. While we can easily "eye-ball" simple machines to know if it halts, there is no general algorithm that can determine ternimation for any Register Machines. In other words, the Halting Problem is undecidable.
 
 We can define a function `H` that takes the list encoding of the Gödel number of a machine as well as a series of arguments, returning 1 if the input machine terminates with the input arguments, otherwise 0. Clearly, `H` is a total function.
 
