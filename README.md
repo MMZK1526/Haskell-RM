@@ -397,8 +397,8 @@ TODO
 
   ```RM
   decodeRM 3072 = 
-  0: R0- 0 1
-  1: HALT
+  L0: R0- 0 1
+  L1: HALT
   ```
 
 * `encodeLine :: Line -> Integer`:  
@@ -419,8 +419,8 @@ TODO
 
   ```RM
   rm =
-  0: R0- 0 1
-  1: HALT
+  L0: R0- 0 1
+  L1: HALT
   ```  
 
   * Note that since the Gödel  of Register Machines "grows" very quickly, it is usually pointless trying to compute the entire  for machines of interests. An alternative is to view the list representation of a machine via `toList`.  
@@ -431,8 +431,8 @@ TODO
 
   ```RM
   fromList [1024, 0] = 
-  0: R0- 0 1
-  1: HALT
+  L0: R0- 0 1
+  L1: HALT
   ```
 
 * `toList :: LineLike l => RMCode -> [l]`:  
@@ -441,8 +441,8 @@ TODO
 
   ```RM
   rm =
-  0: R0- 0 1
-  1: HALT
+  L0: R0- 0 1
+  L1: HALT
   ```  
 
 TODO: Other documentation
