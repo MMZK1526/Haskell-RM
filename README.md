@@ -1,5 +1,7 @@
 # Haskell-RM
 
+By MMZK1526 *a.k.a.* Yìtáng Chén
+
 A CLI that evaluates Register Machines efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
@@ -14,22 +16,22 @@ For the full API documentation, go to [Documentation](#Documentation).
 
 ### Introduction
 
-A Register Machine is a simple system involving a finite number of registers (each holding a natural number), a finite number of lines, and only three instructions (increment, decrement and halt).  
+A Register Machine is a simple system involving a finite  of registers (each holding a natural ), a finite  of lines, and only three instructions (increment, decrement and halt).  
 
-An increment instruction takes a register and a line number. It increments a the register and jumps to the given line.  
+An increment instruction takes a register and a line . It increments a the register and jumps to the given line.  
 
-A decrement instruction takes a register and two line numbers (say `m` and `n`). If the register is positive, it decrements the value and jumps to line `m`. Otherwise it jump to line `n` (without changing the register, which is still 0).  
+A decrement instruction takes a register and two line s (say `m` and `n`). If the register is positive, it decrements the value and jumps to line `m`. Otherwise it jump to line `n` (without changing the register, which is still 0).  
 
-A halt instruction terminates the machine. If we jump to a line number that does not exist, it is treated as a halt instruction as well.
+A halt instruction terminates the machine. If we jump to a line  that does not exist, it is treated as a halt instruction as well.
 
 Consider the following example:
 
 ```RM
-0: R1- 1 2
-1: R0+ 0
-2: R2- 3 4
-3: R0+ 2
-4: HALT
+L0: R1- 1 2
+L1: R0+ 0
+L2: R2- 3 4
+L3: R0+ 2
+L4: HALT
 ```
 
 Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from line `0`; which decrements `R1` and goes to line `1`; which increments `R0` and goes back to line `0`; which goes to line `2` since `R1 = 0`; which decrements `R2` and goes to line `3`; which increments `R0` and goes to line `2`; which decrements `R2` and goes to line `3`; which increments `R0` and goes to line `2`; which goes to line `4` since `R2 = 0`; which halts with `R0 = 3`, `R1 = 0` and `R2 = 0`.
@@ -38,11 +40,15 @@ If we treat `R0` as the result and the other registers as the input, then a Regi
 
 Despite its first appearance, Register Machines are actually very powerful: the system is Turing-complete. This means they are capable of basically whatever modern computers can do.
 
+### Performance
+
+TODO
+
 ### Gödelisation
 
-Intriguingly, there is a **ONE TO ONE** correspondence between natural numbers and Register Machines (Gödelisation). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
+Intriguingly, there is a **ONE TO ONE** correspondence between natural s and Register Machines (Gödelisation). In other words, any natural  uniquely represents a Register Machine and *vice versa*.  
 
-The foundation of Gödelisation lies in the following functions: let `F(x, y) = 2^x + (2y + 1)` and `f(x, y) = F(x, y) - 1`, it can be proven that the former is a bijection between pairs of natual numbers to positive numbers and the latter a bijection to natural numbers:
+The foundation of Gödelisation lies in the following functions: let `F(x, y) = 2^x + (2y + 1)` and `f(x, y) = F(x, y) - 1`, it can be proven that the former is a bijection between pairs of natual s to positive s and the latter a bijection to natural s:
 
 f|F|(x, y)
 ----|---|----
@@ -56,7 +62,7 @@ f|F|(x, y)
 7|8|(3, 0)
 8|9|(0, 4)
 
-With `F`, we can recursively define a function, `L`, that is a bijection between finite lists of natural numbers and singular natural numbers: `L([]) = 0; L(x : xs) = F(x, L(xs))`:
+With `F`, we can recursively define a function, `L`, that is a bijection between finite lists of natural s and singular natural s: `L([]) = 0; L(x : xs) = F(x, L(xs))`:
 
 L|xs|L|xs
 ----|---|----|---
@@ -71,17 +77,17 @@ L|xs|L|xs
 8|[3]|18|[1, 2]
 9|[0, 2]|19|[0, 0, 2]
 
-There is a trick to "decode" a number to a list of numbers, namely expressing the number in binary form and count of number of zeros between ones from right to left. For example, 998 in binary is 1111100110, and if we count from the rightmost digit, it starts with 1 zero before reaching a one, then 0 zeros due to the consecutive ones, then 2 zeros, and so on. The result is then [1, 0, 2, 0, 0, 0, 0].
+There is a trick to "decode" a  to a list of s, namely expressing the  in binary form and count of  of zeros between ones from right to left. For example, 998 in binary is 1111100110, and if we count from the rightmost digit, it starts with 1 zero before reaching a one, then 0 zeros due to the consecutive ones, then 2 zeros, and so on. The result is then [1, 0, 2, 0, 0, 0, 0].
 
-With the functions `F` and `f`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register number `r` with a line number `l`, and we encode it with `F(2r, l)`; if it is a decrement, then it has a register number `r` with two line numbers `l1` and `l2`, and we encode it with `F(2r + 1, f(l1, l2))`.
+With the functions `F` and `f`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register  `r` with a line  `l`, and we encode it with `F(2r, l)`; if it is a decrement, then it has a register  `r` with two line s `l1` and `l2`, and we encode it with `F(2r + 1, f(l1, l2))`.
 
-Finally, once we encode each line of a Register Machine into a number, we can then encode the list of numbers into a single number by `L`.
+Finally, once we encode each line of a Register Machine into a , we can then encode the list of s into a single  by `L`.
 
-One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel number of `L([152, 1, 4576, 5, 0])`, a number larger than 10^1426.
+One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel  of `L([152, 1, 4576, 5, 0])`, a  larger than 10^1426.
 
-If we convert a natual number to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line number. This does not cause any problem, however, since we treat bad line numbers as Halt instructions.
+If we convert a natual  to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line . This does not cause any problem, however, since we treat bad line s as Halt instructions.
 
-In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
+In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural s. The documentation can be viewed [here](#Convert).
 
 ### Computability
 
@@ -95,16 +101,16 @@ Of course, such a definition is quite imprecise, as we have not yet defined what
 
 On first glance, we may believe that all functions are computable. This is, however, not the case. Thanks to [Gödelisation](#Gödelisation), we can prove so via Cantor's diagonal argument:
 
-We can list Register Machines by their corresponding Gödel number, *i.e.* `RM0`, `RM1` *etc.*, These machines all have corresponding functions that they implement, *i.e.* `F0`, `F1` *etc.*:
+We can list Register Machines by their corresponding Gödel , *i.e.* `RM0`, `RM1` *etc.* These machines all have corresponding functions that they implement, *i.e.* `F0`, `F1` *etc.*:
 
-Gödel number|Machine|Function
+Gödel |Machine|Function
 -|-|-
 0|RM0|F0
 1|RM1|F1
 2|RM2|F2
 ...|...|...
 
-Assume all functions are computable, then all functions must appear in the (countably infinite) table above. However, we can define a function `F` that does not appear in the table, thus leading to a contradiction. For any natural number n, we define `F(n) = 0` if `Fn(n)` is not defined, and leave `F(n)` undefined if `Fn(n)` is defined.
+Assume all functions are computable, then all functions must appear in the (countably infinite) table above. However, we can define a function `F` that does not appear in the table, thus leading to a contradiction. For any natural  n, we define `F(n) = 0` if `Fn(n)` is not defined, and leave `F(n)` undefined if `Fn(n)` is defined.
 
 For example, `RM0` contains no instruction, thus it does not change the input at all and `F0(0) = 0`. Similarly, `RM1` only contains one Halt instruction, thus `F1(1) = 0` as well (because the input is in R1 but the output is read from R0). However, `RM2` contains one line of `0: R0+ 0`, thus it will never terminate. By our definition of `F`, we would have `F(0)`, `F(1)` undefined and `F(2) = 0`.
 
@@ -112,9 +118,50 @@ One can also verify that `F` is undefined for inputs 4, 5 and 7, `F(6) = 0`, `F(
 
 By construction, `F` and `Fn` differs on their behaviours on input n, hence `F` is not in the table, contradiction.
 
-### Performance
+Although almost all functions are not computable, it is not trivial to come up with an example of incomputable functions (our `F` defined above is one of them). In the following sections, we will briefly discuss two other such examples.
 
-TODO
+### Busy Beaver & The Halting Problem
+
+For a Register Machine with n lines, it is natural to ask, what is the largest number it can produce?
+
+Strictly speaking, we start all registers from zero, and we want the result of R0 to be as large as possible. Such a machine is known as a Busy Beaver, and the objective is to find the best Busy Beaver with n lines for any natural number n. Define `B(n)` to be the maximum output of a Busy Beaver with n lines, clearly `B` is a function.
+
+In general, it is very hard to find `B(n)` except for the very first couple of n values. `B(0) = 0` because there are no instructions to start with. `B(1) = 1`, which is realised by `0: R0+ 1`. Note that `0: R0+ 0` is not a Busy Beaver since it never terminates. Similarly, `B(n) = n` for n up to 4 (though it is less trivial to prove so). However, `B(5) = 6` as provided by the following Busy Beaver, while the proof is more complicated:
+
+```RM
+L0: R1+ 1
+L1: R0+ 2
+L2: R0+ 3
+L3: R0+ 4
+L4: R1- 1 5
+```
+
+I was not able to determine `B(6)`, but it is at least 9 from the following Busy Beaver:
+
+```RM
+L0: R1+ 1
+L1: R1+ 2
+L2: R0+ 3
+L3: R0+ 4
+L4: R0+ 5
+L5: R1- 2 6
+```
+
+Despite its fascinating definition, the function `B` is not computable, therefore we can never find an algorithm - no matter how inefficient - to determine `B(n)` for any n. Its proof again uses *reductio ad absurdum*.
+
+Firstly, we can design a Busy Beaver with n + 3 lines that produces 2n similar to the construction of the `B(5)` machine above. Let us take any computable function `F`. Then it must have a corresponding Register Machine `R` with `l` lines. We can construct another Register Machine `R'` as following.
+
+1. Utilise its first l + 9 = (l + 6) + 3 lines to put the number 2(l + 6) into R0 via the Busy Beaver decribed on the paragraph above.
+
+2. Use two lines to move R0 to R1. This is easy to construct.
+
+3. Use l lines to compute `F(2(l + 6)) = F(2l + 12)` in R0.
+
+4. Use one line to increment R0 and terminates.
+
+By construction, `R'` is a Busy Beaver with 2l + 12 lines that produces the number `F(2l + 12) + 1`.
+
+Assume that `B` is computable, and that it takes `b` lines to implement it as a Register Machine. According to the argument above, there exists a Busy Beaver with 2b + 12 lines that produces `B(2b + 12) + 1`. However, by definition, `B(2b + 12)` is the maximum value that a Busy Beaver with 2b + 12 lines may produce, which leads to a contradiction.
 
 ## CLI
 
@@ -277,7 +324,7 @@ R2: 5
 
 ```
 
-By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The number of steps per output is configuable, see [options](#Options) for the details (as well as more options).
+By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The  of steps per output is configuable, see [options](#Options) for the details (as well as more options).
 
 ### Syntax
 
@@ -335,7 +382,7 @@ TODO
   1: HALT
   ```  
 
-  * Note that since the Gödel Number of Register Machines "grows" very quickly, it is usually pointless trying to compute the entire number for machines of interests. An alternative is to view the list representation of a machine via `toList`.  
+  * Note that since the Gödel  of Register Machines "grows" very quickly, it is usually pointless trying to compute the entire  for machines of interests. An alternative is to view the list representation of a machine via `toList`.  
 
 * `fromList :: LineLike l => [l] -> RMCode`:  
   * Decodes a list of `Linelike`s (namely `Line` or `Integer`) into a Register Machine `RMCode`.  
