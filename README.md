@@ -48,9 +48,9 @@ TODO
 
 Intriguingly, there is a ONE TO ONE correspondence between natural number and Register Machines (**Gödelisation**). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
 
-The foundation of Gödelisation lies in the following functions: let `F(x, y) = 2^x + (2y + 1)` and `f(x, y) = F(x, y) - 1`, it can be proven that the former is a bijection between pairs of natural number to positive number and the latter a bijection to natural number:
+The foundation of Gödelisation lies in the following functions: let `p(x, y) = 2^x + (2y + 1)` and `p'(x, y) = p(x, y) - 1`, it can be proven that the former is a bijection between pairs of natural number to positive number and the latter a bijection to natural number:
 
-f|F|(x, y)
+p'|p|(x, y)
 ----|---|----
 0|1|(0, 0)
 1|2|(1, 0)
@@ -62,7 +62,7 @@ f|F|(x, y)
 7|8|(3, 0)
 8|9|(0, 4)
 
-With `F`, we can recursively define a function, `L`, that is a bijection between finite lists of natural number and singular natural number: `L([]) = 0; L(x : xs) = F(x, L(xs))`:
+With `p`, we can recursively define a function, `s`, that is a bijection between finite lists of natural number and singular natural number: `s([]) = 0; s(x : xs) = p(x, s(xs))`:
 
 L|xs|L|xs
 ----|---|----|---
@@ -79,15 +79,15 @@ L|xs|L|xs
 
 There is a trick to "decode" a  to a list of numbers, namely expressing the  in binary form and count of  of zeros between ones from right to left. For example, 998 in binary is 1111100110, and if we count from the rightmost digit, it starts with 1 zero before reaching a one, then 0 zeros due to the consecutive ones, then 2 zeros, and so on. The result is then [1, 0, 2, 0, 0, 0, 0].
 
-With the functions `F` and `f`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register  `r` with a line  `l`, and we encode it with `F(2r, l)`; if it is a decrement, then it has a register  `r` with two line numbers `l1` and `l2`, and we encode it with `F(2r + 1, f(l1, l2))`.
+With the functions `p` and `p'`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register  `r` with a line  `l`, and we encode it with `p(2r, l)`; if it is a decrement, then it has a register  `r` with two line numbers `l1` and `l2`, and we encode it with `p(2r + 1, p'(l1, l2))`.
 
-Finally, once we encode each line of a Register Machine into a , we can then encode the list of number into a single  by `L`.
+Finally, once we encode each line of a Register Machine into a , we can then encode the list of number into a single  by `s`.
 
-One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel  of `L([152, 1, 4576, 5, 0])`, a  larger than 10^1426.
+One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel  of `s([152, 1, 4576, 5, 0])`, a  larger than 10^1426.
 
 If we convert a natual  to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line . This does not cause any problem, however, since we treat bad line number as Halt instructions.
 
-In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural number. The documentation can be viewed [here](#Convert).
+In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
 
 ### URM
 
@@ -95,9 +95,9 @@ TODO
 
 ### Computability
 
-As mentioned earlier, a Register Machine with registers R0 to Rn can be treated as a partial function from N^n to N. In fact, the machine does not have to use exactly n + 1 registers. If it has less, then the rest of the inputs has no effect on the output; if it has more, the surplus registers are initialised to 0 and can be used as "scrap registers" during the computation. For example, the [collatz program](Examples/collatz.rm) takes one input (R1), but also uses a temporary register (R2) that is initialised to 0.
+As mentioned earlier, a Register Machine with registers R0 to Rn can be treated as a partial function from N^n to N. In fact, the machine does not have to use exactly `n + 1` registers. If it has less, then the rest of the inputs has no effect on the output; if it has more, the surplus registers are initialised to 0 and can be used as "scrap registers" during the computation. For example, the [collatz program](Examples/collatz.rm) takes one input (R1), but also uses a temporary register (R2) that is initialised to 0.
 
-For simplicity, let us consider the simplist case of n = 1. From now on, we use the term "function" for "partial functions from N to N".
+For simplicity, let us consider the simplist case of `n = 1`. From now on, we use the term "function" for "partial functions from N to N".
 
 It is easy to see that there are infinitely many functions, but we are interested to see which of these functions are "computable", in other words, their results can be calculated via a finite step of instructions.
 
@@ -105,32 +105,32 @@ Of course, such a definition is quite imprecise, as we have not yet defined what
 
 On first glance, we may believe that all functions are computable. This is, however, not the case. Thanks to [Gödelisation](#Gödelisation), we can prove so via Cantor's diagonal argument:
 
-We can list Register Machines by their corresponding Gödel , *i.e.* `RM0`, `RM1` *etc.* These machines all have corresponding functions that they implement, *i.e.* `F0`, `F1` *etc.*:
+We can list Register Machines by their corresponding Gödel , *i.e.* `RM0`, `RM1` *etc.* These machines all have corresponding functions that they implement, *i.e.* `f0`, `f1` *etc.*:
 
 Gödel |Machine|Function
 -|-|-
-0|RM0|F0
-1|RM1|F1
-2|RM2|F2
+0|RM0|f0
+1|RM1|f1
+2|RM2|f2
 ...|...|...
 
-Assume all functions are computable, then all functions must appear in the (countably infinite) table above. However, we can define a function `F` that does not appear in the table, thus leading to a contradiction. For any natural number n, we define `F(n) = 0` if `Fn(n)` is not defined, and leave `F(n)` undefined if `Fn(n)` is defined.
+Assume all functions are computable, then all functions must appear in the (countably infinite) table above. However, we can define a function `f*` that does not appear in the table, thus leading to a contradiction. For any natural number n, we define `f*(n) = 0` if `f{n}(n)` is not defined, and leave `f*(n)` undefined if `f{n}(n)` is defined.
 
-For example, `RM0` contains no instruction, thus it does not change the input at all and `F0(0) = 0`. Similarly, `RM1` only contains one Halt instruction, thus `F1(1) = 0` as well (because the input is in R1 but the output is read from R0). However, `RM2` contains one line of `0: R0+ 0`, thus it will never terminate. By our definition of `F`, we would have `F(0)`, `F(1)` undefined and `F(2) = 0`.
+For example, `RM0` contains no instruction, thus it does not change the input at all and `f0(0) = 0`. Similarly, `RM1` only contains one Halt instruction, thus `f1(1) = 0` as well (because the input is in R1 but the output is read from R0). However, `RM2` contains one line of `0: R0+ 0`, thus it will never terminate. By our definition of `F`, we would have `f*(0)`, `f*(1)` undefined and `f*(2) = 0`.
 
-One can also verify that `F` is undefined for inputs 3, 4, 5 and 7, `F(6) = 0`, `F(8) = 0`, and so on. Notably, `RM8` is the first Register Machine in the table that actually do something to R0 (it always returns 1), and `RM1090519040` is the first I could find that actually has different outcomes based on the input (*please try find me a smaller one*).
+One can also verify that `f*` is undefined for inputs 3, 4, 5 and 7, `f*(6) = 0`, `f*(8) = 0`, and so on. Notably, `RM8` is the first Register Machine in the table that actually do something to R0 (it always returns 1), and `RM1090519040` is the first I could find that actually has different outcomes based on the input (*please try find me a smaller one*).
 
-By construction, `F` and `Fn` differs on their behaviours on input n, hence `F` is not in the table, contradiction.
+By construction, `f*` and `f{n}` differs on their behaviours on input `n`, hence `f*` is not in the table, contradiction.
 
-Although almost all functions are not computable, it is not trivial to come up with an example of incomputable functions (our `F` defined above is one of them). In the following sections, we will briefly discuss three (or more?) other such examples.
+Although almost all functions are not computable, it is not trivial to come up with an example of incomputable functions (our `f*` defined above is one of them). In the following sections, we will briefly discuss three (or more?) other such examples.
 
 ### Busy Beaver, Wheezy Weaver & The Halting Problem
 
-For a Register Machine with n lines, it is natural to ask, what is the largest number it can produce?
+For a Register Machine with `n` lines, it is natural to ask, what is the largest number it can produce?
 
-Strictly speaking, we start all registers from zero, and we want the result of R0 to be as large as possible. Such a machine is known as a **Busy Beaver**, and the objective is to find the best Busy Beaver with n lines for any natural number n. Define `B(n)` to be the maximum output of a Busy Beaver with n lines, clearly `B` is a function.
+Strictly speaking, we start all registers from zero, and we want the result of R0 to be as large as possible. Such a machine is known as a **Busy Beaver**, and the objective is to find the best Busy Beaver with n lines for any natural number `n`. Define `b(n)` to be the maximum output of a Busy Beaver with `n` lines, clearly `b` is a function.
 
-In general, it is very hard to find `B(n)` except for the very first couple of n values. `B(0) = 0` because there are no instructions to start with. `B(1) = 1`, which is realised by `0: R0+ 1`. Note that `0: R0+ 0` is not a Busy Beaver since it never terminates. Similarly, `B(n) = n` for n up to 4 (though it is less trivial to prove so). However, `B(5) = 6` as provided by the following Busy Beaver, while the proof is more complicated:
+In general, it is very hard to find `b(n)` except for the very first couple of `n` values. `b(0) = 0` because there are no instructions to start with. `b(1) = 1`, which is realised by `L0: R0+ 1`. Note that `L0: R0+ 0` is not a Busy Beaver since it never terminates. Similarly, `b(n) = n` for `n` up to 4 (though it is less trivial to prove so). However, `b(5) = 6` as provided by the following Busy Beaver, while the proof is more complicated:
 
 ```RM
 L0: R1+ 1
@@ -140,7 +140,7 @@ L3: R0+ 4
 L4: R1- 1 5
 ```
 
-I was not able to determine `B(6)`, but it is at least 9 from the following Busy Beaver:
+I was not able to determine `b(6)`, but it is at least 9 from the following Busy Beaver:
 
 ```RM
 L0: R1+ 1
@@ -151,25 +151,25 @@ L4: R0+ 5
 L5: R1- 2 6
 ```
 
-Despite its fascinating definition, the function `B` is not computable, therefore we can never find an algorithm - no matter how inefficient - to determine `B(n)` for any n. Its proof again uses *reductio ad absurdum*.
+Despite its fascinating definition, the function `b` is not computable, therefore we can never find an algorithm - no matter how inefficient - to determine `b(n)` for any `n`. Its proof again uses *reductio ad absurdum*.
 
-Firstly, we can design a Busy Beaver with n + 2 lines that produces 2n similar to the construction of the `B(5)` machine above. Let us take any total computable function `F`. Then it must have a corresponding Register Machine `R` with `l` lines. We can construct another Register Machine `R'` as following.
+Firstly, we can design a Busy Beaver with `n + 2` lines that produces `2n` similar to the construction of the `b(5)` machine above. Let us take any total computable function `f`. Then it must have a corresponding Register Machine `R` with `l` lines. We can construct another Register Machine `R'` as following.
 
-1. Utilise its first l + 7 = (l + 5) + 2 lines to put the number 2(l + 5) into R0 via the Busy Beaver decribed on the paragraph above.
+1. Utilise its first `l + 7 = (l + 5) + 2` lines to put the number `2(l + 5)` into R0 via the Busy Beaver decribed on the paragraph above.
 
 2. Use two lines to move R0 to R1. This is easy to construct.
 
-3. Use l lines to compute `F(2(l + 5)) = F(2l + 10)` in R0.
+3. Use `l` lines to compute `f(2(l + 5)) = f(2l + 10)` in R0 via `R`.
 
 4. Use one line to increment R0 and terminates.
 
-By construction, `R'` is a Busy Beaver with 2l + 10 lines that produces the number `F(2l + 10) + 1`.
+By construction, `R'` is a Busy Beaver with `2l + 10` lines that produces the number `f(2l + 10) + 1`.
 
-Assume that `B` is computable, and that it takes `b` lines to implement it as a Register Machine. According to the argument above, there exists a Busy Beaver with 2b + 12 lines that produces `B(2b + 12) + 1`. However, by definition, `B(2b + 12)` is the maximum value that a Busy Beaver with 2b + 12 lines may produce, which leads to a contradiction.
+Assume that `b` is computable, and that it takes `l` lines to implement it as a Register Machine. According to the argument above, there exists a Busy Beaver with `2b + 10` lines that produces `b(2l + 10) + 1`. However, by definition, `b(2l + 10)` is the maximum value that a Busy Beaver with `2b + 10` lines may produce, which leads to a contradiction.
 
-Before introducing the famous Halting Problem, let us look at a variation of Busy Beaver: we still initialise all registers with 0, but instead of trying to produce the largest number possible, this time we attempt to make our machine run with as many steps as possible. We call such machines **Wheezy Weavers**, and define `W(n)` as the most steps a n-line Wheezy Weaver can produce.
+Before introducing the famous Halting Problem, let us look at a variation of Busy Beaver: we still initialise all registers with 0, but instead of trying to produce the largest number possible, this time we attempt to make our machine run with as many steps as possible. We call such machines **Wheezy Weavers**, and define `w(n)` as the most steps a n-line Wheezy Weaver can produce.
 
-For first few values of n, we have `W(0) = 1` (starting at line 0, but it does not exist, thus treated as a `HALT`), `W(1) = 2`, `W(2) = 3`, `W(3) = 6` and `W(4) = 11`. The last two are demonstrated with the following machines:
+For first few values of `n`, we have `w(0) = 1` (starting at line 0, but it does not exist, thus treated as a `HALT`), `w(1) = 2`, `w(2) = 3`, `w(3) = 6` and `w(4) = 11`. The last two are demonstrated with the following machines:
 
 ```RM
 L0: R1+ L1
@@ -184,25 +184,25 @@ L2: R1- L1 L3
 L3: R0- L2 L4
 ```
 
-Like `B`, `W` is also not computable, and the proof is similar. Firstly, notice that if f(x) = y, then the Register Machine corresponding to f (if exists) must take at leat y steps to calculate the result, because the result is in R0 which starts with 0, but each step increment R0 by at most 1. In particular, we have `W(n) >= B(n)` for all n.
+Like `b`, `w` is also not computable, and the proof is similar. Firstly, notice that if `f(x) = y`, then the Register Machine corresponding to `f` (if exists) must take at leat `y` steps to calculate the result, because the result is in R0 which starts with 0, but each step increment R0 by at most 1. In particular, we have `w(n) >= b(n)` for all `n`.
 
-Let us refer back to the machine that has n + 2 lines and produces 2n. It takes 2n + 4 steps to execute: each line except the first is reached twice plus the final implicit Halt. Now assume `W` is computable by a machine `R` with `l` lines, using the same construction for `R'` in the Busy Beaver proof, we end up with a machine with 2l + 10 lines and 2(l + 7) + 2(2l + 10) + X + 2 steps of execution, where X is the number of steps for `R` with input 2l + 10. Therefore the number of steps for `R'` is at least `X + 1 >= W(2l + 10) + 1`. However, `W(2l + 10)` is by definition the upper bound of number of steps `R'` could take, contradiction.
+Let us refer back to the machine that has n + 2 lines and produces 2n. It takes 2n + 4 steps to execute: each line except the first is reached twice plus the final implicit Halt. Now assume `w` is computable by a machine `R` with `l` lines, using the same construction for `R'` in the Busy Beaver proof, we end up with a machine with `2l + 10` lines and `2(l + 7) + 2(2l + 10) + X + 2` steps of execution, where `X` is the number of steps for `R` with input 2l + 10. Therefore the number of steps for `R'` is at least `X + 1 >= W(2l + 10) + 1`. However, `W(2l + 10)` is by definition the upper bound of number of steps `R'` could take, contradiction.
 
 It is time to discuss the famous **Halting Problem**. Simply speaking, we would like to know if a Register Machine would terminate under a given input. While we can easily "eye-ball" simple machines to know if it halts, there is no general algorithm that can determine ternimation for any Register Machines. In other words, the Halting Problem is undecidable.
 
-We can define a function `H` that takes the list encoding of the Gödel number of a machine as well as a series of arguments, returning 1 if the input machine terminates with the input arguments, otherwise 0. Clearly, `H` is a total function.
+We can define a function `h` that takes the list encoding of the Gödel number of a machine as well as a series of arguments, returning 1 if the input machine terminates with the input arguments, otherwise 0. Clearly, `h` is a total function.
 
-The most iconic proof for the incomputability of `H` introduces a wrapper around it and produces a contradiction. Here, however, we will prove that `H`, if computable, can be used to build a Register Machine for the Busy Beaver function `B`.
+The most iconic proof for the incomputability of `h` introduces a wrapper around it and produces a contradiction. Here, however, we will prove that `h`, if computable, can be used to build a Register Machine for the Busy Beaver function `b`.
 
-For any natural number n, we can develop a Register Machine that generates the Gödel number of all n-line Register Machine such that the register indices are between 0 and n - 1 while the line numbers are between 0 and n. It is clear that all Register Machines with n lines are equivalent to one of these, because such machines can declare at most n registers, and all line numbers not between 0 and n - 1 have the same behaviour as line n (namely implicit Halt).
+For any natural number `n`, we can develop a Register Machine that generates the Gödel number of all `n`-line Register Machine such that the register indices are between 0 and `n - 1` while the line numbers are between 0 and `n`. It is clear that all Register Machines with `n` lines are equivalent to one of these, because such machines can declare at most `n` registers, and all line numbers not between 0 and `n - 1` have the same behaviour as line `n` (namely implicit Halt).
 
-We can imagine that such a machine is enormous, but it is feasible: one approach is to iterate through all numbers between 0 and M, then decode it piece by piece and check if the registers and line numbers are within the range, where M is the Gödel number of the machine with n lines of `R{n-1}- n n`.
+We can imagine that such a machine is enormous, but it is feasible: one approach is to iterate through all numbers between 0 and `M`, then decode it piece by piece and check if the registers and line numbers are within the range, where `M` is the Gödel number of the machine with `n` identical lines of `R{n-1}- n n`.
 
-With this machine and the [URM](#URM), one can simulate the execution of the generated machines one by one, and return the largest R0 value in each simulation. There is one caveat, however, as the simulation would last forever if the corresponding machine does not terminate on input 0. But if we have a machine that solves the Halting Problem, we can use it to check for termination and ignore those that does not finish. In this way, we are effectively building a machine corresponding to `B`. Therefore, the Halting Problem function `H` is not computable.
+With this machine and the [URM](#URM), one can simulate the execution of the generated machines one by one, and return the largest R0 value in each simulation. There is one caveat, however, as the simulation would last forever if the corresponding machine does not terminate on input 0. But if we have a machine that solves the Halting Problem, we can use it to check for termination and ignore those that does not finish. In this way, we are effectively building a machine corresponding to `b`. Therefore, the Halting Problem function `h` is not computable.
 
 The [collatz program](Examples/collatz.rm) is a living example that witnesses the story of the undecidable Halting Problem. People believe that this machine terminates for all input, but it remains a conjecture. For more information on it can be found [here](#Example).
 
-We will end this long section with a final remark on Wheezy Weavers. If a n-line Register Machine executes with more steps than `W(n)`, clearly it is not going to terminate. This not only gives us another proof on the incomputability of `W`, but also a stronger result: if a function `f` is greater than `W`, namely `f(n) > W(n)` for all n, then `f` is not computable. If not, we can run the machine for `f` first before simulating the exeuction with an extended URM that also keeps track of the number of steps. If the number is greater than `f(n)`, we can immediately determine that the machine does not terminate, which is impossible.
+We will end this long section with a final remark on Wheezy Weavers. If a `n`-line Register Machine executes with more steps than `w(n)`, clearly it is not going to terminate. This not only gives us another proof on the incomputability of `w`, but also a stronger result: if a function `f` is greater than `w`, namely `f(n) > w(n)` for all `n`, then `f` is not computable. If not, we can run the machine for `f` first before simulating the exeuction with an extended URM that also keeps track of the number of steps. If the number is greater than `f(n)`, we can immediately determine that the machine does not terminate, which is impossible.
 
 ## CLI
 
@@ -365,7 +365,7 @@ R2: 5
 
 ```
 
-By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The  of steps per output is configuable, see [options](#Options) for the details (as well as more options).
+By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The  of steps per output is configuable, see [Options](#Options) for the details (as well as more options).
 
 ### Syntax
 
