@@ -129,6 +129,6 @@ parseLine table i = do
       eatSpaces
       M_ x y <$> parseLabel
     parseH       = do
-      try (string "HALT") <|> string "H"
+      try (string "HALT") <|> try (string "ARRÊT") <|> string "H"
       eatSpaces
       return H_
