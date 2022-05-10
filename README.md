@@ -2,7 +2,7 @@
 
 By MMZK1526 *a.k.a.* Yìtáng Chén
 
-A CLI that evaluates [**Register Machines**](#Register-Machine) efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
+A CLI that evaluates [**Register Machines**](#Register-Machine) efficiently in Haskell. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 
@@ -46,7 +46,7 @@ As one may imagine, Register Machines are in general very inefficient since it c
 
 As a result, a naïve RM simulation is pretty useless except for extremely small inputs. In my implementation, the simulator analyses the control flow of the machine, detecting execution cycles, and execute the iterations in one go. For example, the adder machine consists of a R0-R1 cycle and a R0-R2 cycle where the contents of both inputs "flow" into R0. With my optimisation, each cycle only consists of one step during the simulation so that the execution has *de juro* constant-time.
 
-This optimisation also makes simulating the [Universal Register Machine](#URM) possible.
+This optimisation also makes simulating the [Universal Register Machine](#Universal-Register-Machine) possible.
 
 If an infinite loop is detected, the simulator would end immediately and report the machine is never going to terminate. The examples [loop](Examples/loop.rm) and [cycle](Examples/cycle.rm) demonstrate this behaviour. Of course, it is not able to detect all infinite loops since the Halting Problem is undecidable (see [Computability](#Computability)).
 
@@ -95,7 +95,7 @@ If we convert a natual number to a Register Machine, then most likely it will co
 
 In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
 
-### URM
+### Universal Register Machine
 
 TODO
 
@@ -204,7 +204,7 @@ For any natural number `n`, we can develop a Register Machine that generates the
 
 We can imagine that such a machine is enormous, but it is feasible: one approach is to iterate through all numbers between 0 and `M`, then decode it piece by piece and check if the registers and line numbers are within the range, where `M` is the Gödel number of the machine with `n` identical lines of `R{n-1}- n n`.
 
-With this machine and the [URM](#URM), one can simulate the execution of the generated machines one by one, and return the largest R0 value in each simulation. There is one caveat, however, as the simulation would last forever if the corresponding machine does not terminate on input 0. But if we have a machine that solves the Halting Problem, we can use it to check for termination and ignore those that does not finish. In this way, we are effectively building a machine corresponding to `b`. Therefore, the Halting Problem function `h` is not computable.
+With this machine and the [URM](#Universal-Register-Machine), one can simulate the execution of the generated machines one by one, and return the largest R0 value in each simulation. There is one caveat, however, as the simulation would last forever if the corresponding machine does not terminate on input 0. But if we have a machine that solves the Halting Problem, we can use it to check for termination and ignore those that does not finish. In this way, we are effectively building a machine corresponding to `b`. Therefore, the Halting Problem function `h` is not computable.
 
 The [collatz program](Examples/collatz.rm) is a living example that witnesses the story of the undecidable Halting Problem. People believe that this machine terminates for all input, but it remains a conjecture. More information on it can be found [here](#Example).
 
@@ -412,15 +412,15 @@ Options:
 
 * `decodeLine :: Integer -> Line`:  
   * Decodes an `Integer` into a `Line`.  
-  * *e.g.* `decodeLine 24 = R1- 1 0` since 35 = 2 ^ **3** *(2* **1** + 1), 3 = 2 ***1** + 1 and 1 + 1 = 2 = (2 ^ **1*** (1 * **0** + 1)).  
+  * *e.g.* `decodeLine 24 = R1- 1 0` since 35 = 2 ^ **3** × (2 × **1** + 1), 3 = 2 × **1** + 1 and 1 + 1 = 2 = (2 ^ **1** × (1 × **0** + 1)).  
 
 * `decodeList :: Integer -> [Integer]`:  
   * Decodes an `Integer` into a list of `Integer`s.  
-  * *e.g.* `decodeLine 42 = [1, 1, 1]` since 42 = 2 ^ **1** *(2* 2 ^ **1** *(2* (2 ^ **1** *(2* **0** + 1)) + 1) + 1).  
+  * *e.g.* `decodeLine 42 = [1, 1, 1]` since 42 = 2 ^ **1** × (2 × 2 ^ **1** × (2 × (2 ^ **1** × (2 × **0** + 1)) + 1) + 1).  
 
 * `decodePair :: (Integral a, Integral b) => b -> (a, a)`:  
   * Decodes an `Integral` (*e.g* an `Integer`) into a pair of `Integrals`.  
-  * *e.g.* `decodePair 100 = (2, 12)` (using `Integer`s) since 100 = 2 ^ **2** *(2* **12** + 1).  
+  * *e.g.* `decodePair 100 = (2, 12)` (using `Integer`s) since 100 = 2 ^ **2** × (2 × **12** + 1).  
 
 * `decodeRM :: Integer -> RMCode`:  
   * Decodes an `Integer` into a Register Machine `RMCode`.  
