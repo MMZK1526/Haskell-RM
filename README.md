@@ -42,7 +42,11 @@ Despite its first appearance, Register Machines are actually very powerful: the 
 
 ### Performance
 
-TODO
+As one may imagine, Register Machines are in general very inefficient since it can increment or decrement at most one register at a time. For example, the [adder machine](Examples/add.rm) which computes `f(x, y) = x + y` takes `x + y + 3` steps, and the [multiplier machine](Examples/mult.rm) which computes `f(x, y) = xy` takes `5xy + 3x + 2` steps. If we take the input size as the number of digits the inputs have, then these two "trivial" functions both have exponential time complexity.
+
+As a result, a naïve RM simulation is pretty useless except for extremely small inputs. In my implementation, the simulator analyses the control flow of the machine, detecting execution cycles, and execute the iterations in one go. For example, the adder machine consists of an R0-R1 cycle and R0-R2 cycle, where the contents of both inputs "flow" into R0. With my optimisation, each cycle only consists of one step during the simulation, making the execution *de juro* constant-time.
+
+This optimisation also makes simulating the [Universal Register Machine](#URM) possible.
 
 ### Gödelisation
 
@@ -186,7 +190,7 @@ L3: R0- L2 L4
 
 Like `b`, `w` is also not computable, and the proof is similar. Firstly, notice that if `f(x) = y`, then the Register Machine corresponding to `f` (if exists) must take at leat `y` steps to calculate the result, because the result is in R0 which starts with 0, but each step increment R0 by at most 1. In particular, we have `w(n) >= b(n)` for all `n`.
 
-Let us refer back to the machine that has n + 2 lines and produces 2n. It takes 2n + 4 steps to execute: each line except the first is reached twice plus the final implicit Halt. Now assume `w` is computable by a machine `R` with `l` lines, using the same construction for `R'` in the Busy Beaver proof, we end up with a machine with `2l + 10` lines and `2(l + 7) + 2(2l + 10) + X + 2` steps of execution, where `X` is the number of steps for `R` with input 2l + 10. Therefore the number of steps for `R'` is at least `X + 1 >= W(2l + 10) + 1`. However, `W(2l + 10)` is by definition the upper bound of number of steps `R'` could take, contradiction.
+Let us refer back to the machine that has n + 2 lines and produces 2n. It takes 2n + 4 steps to execute: each line except the first is reached twice plus the final implicit Halt. Now assume `w` is computable by a machine `R` with `l` lines, using the same construction for `R'` in the Busy Beaver proof, we end up with a machine with `2l + 10` lines and `2(l + 7) + 2(2l + 10) + X + 2` steps of execution, where `X` is the number of steps for `R` with input 2l + 10. Therefore the number of steps for `R'` is at least `X + 1 >= w(2l + 10) + 1`. However, `w(2l + 10)` is by definition the upper bound of number of steps `R'` could take, contradiction.
 
 It is time to discuss the famous **Halting Problem**. Simply speaking, we would like to know if a Register Machine would terminate under a given input. While we can easily "eye-ball" simple machines to know if it halts, there is no general algorithm that can determine ternimation for any Register Machines. In other words, the Halting Problem is undecidable.
 
