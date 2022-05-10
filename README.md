@@ -392,8 +392,10 @@ The [Examples](Examples) folder contains more examples that demonstrates the RM 
 ### Options
 
 Usage: `mmzkrm {<options>} <src_file.rm> {<arguments>}`
+
 Arguments:
   A list of non-negative positive integers assigned to the registers, starting from R1; R0 is set to 0.
+
 Options:
   Short | Long | Description
   -|-|-
