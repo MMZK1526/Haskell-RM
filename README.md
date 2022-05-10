@@ -2,7 +2,7 @@
 
 By MMZK1526 *a.k.a.* Yìtáng Chén
 
-A CLI that evaluates **Register Machines** efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
+A CLI that evaluates [**Register Machines**](#RegisterMachine) efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 
@@ -206,9 +206,9 @@ We can imagine that such a machine is enormous, but it is feasible: one approach
 
 With this machine and the [URM](#URM), one can simulate the execution of the generated machines one by one, and return the largest R0 value in each simulation. There is one caveat, however, as the simulation would last forever if the corresponding machine does not terminate on input 0. But if we have a machine that solves the Halting Problem, we can use it to check for termination and ignore those that does not finish. In this way, we are effectively building a machine corresponding to `b`. Therefore, the Halting Problem function `h` is not computable.
 
-The [collatz program](Examples/collatz.rm) is a living example that witnesses the story of the undecidable Halting Problem. People believe that this machine terminates for all input, but it remains a conjecture. For more information on it can be found [here](#Example).
+The [collatz program](Examples/collatz.rm) is a living example that witnesses the story of the undecidable Halting Problem. People believe that this machine terminates for all input, but it remains a conjecture. More information on it can be found [here](#Example).
 
-We will end this long section with a final remark on Wheezy Weavers. If a `n`-line Register Machine executes with more steps than `w(n)`, clearly it is not going to terminate. This not only gives us another proof on the incomputability of `w`, but also a stronger result: if a function `f` is greater than `w`, namely `f(n) > w(n)` for all `n`, then `f` is not computable. If not, we can run the machine for `f` first before simulating the exeuction with an extended URM that also keeps track of the number of steps. If the number is greater than `f(n)`, we can immediately determine that the machine does not terminate, which is impossible.
+We will end this long section with a final remark on Wheezy Weavers. If a `n`-line Register Machine executes with no less steps than `w(n)`, clearly it is not going to terminate. This not only gives us another proof on the incomputability of `w`, but also a stronger result: if a function `f` is greater than `w`, namely `f(n) >= w(n)` for all sufficiently large `n`, then `f` is not computable. If not, we can run the machine for `f` first before simulating the exeuction with an extended URM that also keeps track of the number of steps. If the number is greater than `f(n)`, we can immediately determine that the machine does not terminate, which is impossible.
 
 ## CLI
 
