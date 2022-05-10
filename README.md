@@ -48,6 +48,8 @@ As a result, a naïve RM simulation is pretty useless except for extremely small
 
 This optimisation also makes simulating the [Universal Register Machine](#URM) possible.
 
+If an infinite loop is detected, the simulator would end immediately and report the machine is never going to terminate. The examples [loop](Examples/loop.rm) and [cycle](Examples/cycle.rm) demonstrate this behaviour. Of course, it is not able to detect all infinite loops since the Halting Problem is undecidable (see [Computability](#Computability)).
+
 ### Gödelisation
 
 Intriguingly, there is a ONE TO ONE correspondence between natural number and Register Machines (**Gödelisation**). In other words, any natural number uniquely represents a Register Machine and *vice versa*.  
@@ -370,6 +372,8 @@ R2: 5
 ```
 
 By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The  of steps per output is configuable, see [Usage](#Usage) for the details (as well as more options).
+
+Note that when the show-step option is enabled, the simulator does not conduct the check on infinite loops.
 
 ### Syntax
 

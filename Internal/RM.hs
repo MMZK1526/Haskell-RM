@@ -93,7 +93,8 @@ eval1S = do
           put (RM' code regs i (c' + 1))
     H       -> halt
 
--- | Evaluate the given "RM" by one cycle.
+-- | Evaluate the given "RM" by one cycle. If infinite loop is detected,
+-- terminate the execution immediately.
 evalCycleS :: forall m a. MonadFail m => MArray a Integer m
            => StateT (RM a m) m ()
 evalCycleS = do
