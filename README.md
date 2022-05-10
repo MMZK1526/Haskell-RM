@@ -385,13 +385,20 @@ Instruction has three types as expected:
 
 Note that `R`, `+` and `-` can be ommited. For example, `R0- 1 end` is equivalent to `0 1 end`.
 
-Comments starts with a `#` and continues until the end of the line. Note that they must follow a valid instruction, in other words, comments are not allowed on their own lines.
+Comments starts with "#" and continues until the end of the line. Note that they must follow a valid instruction, in other words, comments are not allowed on their own lines.
 
 The [Examples](Examples) folder contains more examples that demonstrates the RM syntax.
 
 ### Options
 
-TODO
+Usage: `mmzkrm {<options>} <src_file.rm> {<arguments>}`
+Arguments:
+  A list of non-negative positive integers assigned to the registers, starting from R1; R0 is set to 0.
+Options:
+  Short | Long | Description
+  -|-|-
+  `-i` |`--initial`|          Starts the arguments from R0.
+  `-s[20]`|  `--step[=20]` | Show the configuration after each step of evaluation. `--step=x` shows x steps at a time. Enter `quit` to jump to the result.
 
 ## Documentation
 
