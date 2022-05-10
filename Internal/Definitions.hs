@@ -36,8 +36,9 @@ newtype RMCode = RMCode (Array Int Line)
 instance Show RMCode where
   show (RMCode arr)
     | null arr  = "[EMPTY MACHINE]"
-    | otherwise = tail $ foldr (\(i, l) l' -> "\nL" ++ show i ++ ": " ++ l ++ l')
-                               "" $ zip [0..] $ show <$> toList arr
+    | otherwise = tail
+                $ foldr (\(i, l) l'-> concat ["\nL", show i, ": ", l, l'])
+                  "" . zip [0..] $ show <$> toList arr
 
 -- | Gets the number of registers from "RMCode".
 argc :: RMCode -> Int
@@ -72,52 +73,46 @@ type RMCycle = Array Int (Int, [(Int, (Integer, Integer))])
 getCycle :: RMCode -> RMCycle
 getCycle rmCode@(RMCode code) = runST $ do
   let (_, sup) = A.bounds code
-  setST <- STA.fromList $ replicate (sup + 1) False
   arrST <- STA.fromList $ replicate (sup + 1) (0, [])
-  forM_ [0..sup] $ \i -> do
-    let cycle = go i i S.empty M.empty
-    forM_ (fst cycle) $ \i' -> do
-      isSet <- setST MA.! i'
-      unless isSet $ do
-        arrST MA.=: i' $ first length cycle
-        setST MA.=: i' $ True
+  forM_ [0..sup] $ \i -> arrST MA.=: i $ first length (go i i S.empty M.empty)
   MA.freeze arrST
   where
-    merge (net, dec) (tweak, _) = (net + tweak, min (net + tweak) dec)
-    go s i set map
-      | s == i && not (S.null set) = (set, M.toList map)
+    merge (tweak, _) (net, dec) = (net + tweak, min (net + tweak) dec)
+    go s i set dict
+      | s == i && not (S.null set) = (set, M.toList dict)
       | S.member i set             = (S.empty, [])
       | otherwise                  = case code A.! i of
         P n j   -> go s j (S.insert i set)
-                          (M.insertWith merge n (1, 1) map)
+                          (M.insertWith merge n (1, 1) dict)
         M n j _ -> go s j (S.insert i set)
-                          (M.insertWith merge n (-1, -1) map)
+                          (M.insertWith merge n (-1, -1) dict)
         H       -> (S.empty, [])
 
 -- | The state of a RM under execution.
--- Holding the number of registers, the value of each registers, the cycles,
--- the program counter, the number of steps, and if it has reached a halting
+-- Holding the value of each registers, the cycles, the program counter, the
+-- number of steps, if it is stuck in a loop, and if it has reached a halting
 -- configuration.
 --
 -- Note that the state is represented by a mutable array, so this data
 -- structure is only useful under the monad "m".
 data RMState a m
   =  MArray a Integer m
-  => RMState Int Int Integer Bool RMCycle (a Int Integer)
+  => RMState Int Integer Bool Bool RMCycle (a Int Integer)
 
 -- | The result snapshot of a RM.
 data RMResult = RMResult { resRegs  :: [Integer]
                          , resPC    :: Int
                          , resSteps :: Integer }
+              | RMLoop
 
 type RMStateST s = RMState (STArray s) (ST s)
 
 pattern RMState' :: MArray a Integer m => Int -> Integer -> a Int Integer
                  -> RMState a m
-pattern RMState' pc c regs <- RMState _ pc c _ _ regs
+pattern RMState' pc c regs <- RMState pc c _ _ _ regs
 
 -- Contructing a "RMState" under the "ST" monad.
-rmStateST :: Int -> Int -> Integer -> Bool -> RMCycle -> STArray s Int Integer
+rmStateST :: Int -> Integer -> Bool -> Bool -> RMCycle -> STArray s Int Integer
           -> RMState (STArray s) (ST s)
 rmStateST = RMState
 
@@ -127,22 +122,27 @@ data RM a m
   => RM { getCode     :: RMCode
         , getRegState :: RMState a m }
 
--- | Check if the "RM" has terminated.
-isRMTerminated :: MArray a Integer m => RM a m -> Bool
-isRMTerminated rm = let RMState _ _ _ h _ _ = getRegState rm in h
+-- | Check if the "RM" has terminated or contains loop.
+isRMTerminated :: MArray a Integer m => RM a m -> (Bool, Bool)
+isRMTerminated rm = let RMState _ _ h l _ _ = getRegState rm in (h, l)
 {-# INLINE isRMTerminated #-}
+
+-- | Set the loop flag in the "RM" to "True".
+setLoop :: MArray a Integer m => RM a m -> RM a m
+setLoop rm = rm { getRegState = RMState pc c h True cycle regs }
+  where
+    RMState pc c h _ cycle regs = getRegState rm
 
 -- | A bidirectional pattern for "RM" that extracts the array in "RMCode" and
 -- the mutable array of register values in "RMState".
 pattern RM' :: MArray a Integer m
   => Array Int Line
   -> a Int Integer -> Int -> Integer -> RM a m
-pattern RM' code regs pc c <- RM (RMCode code) (RMState _ pc c _ _ regs)
+pattern RM' code regs pc c <- RM (RMCode code) (RMState pc c _ _ _ regs)
   where
     RM' code regs pc c = let rmCode = RMCode code
                              cycle  = getCycle rmCode
-                         in  RM rmCode
-                                (RMState (argc rmCode) pc c False cycle regs)
+                         in  RM rmCode (RMState pc c False False cycle regs)
 
 -- | Builds "RM" from "RMCode" and a list of arguments (starting with r0) with
 -- pc = 0.

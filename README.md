@@ -369,7 +369,7 @@ R2: 5
 
 ```
 
-By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The  of steps per output is configuable, see [Options](#Options) for the details (as well as more options).
+By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The  of steps per output is configuable, see [Usage](#Usage) for the details (as well as more options).
 
 ### Syntax
 
@@ -389,9 +389,9 @@ Comments starts with "#" and continues until the end of the line. Note that they
 
 The [Examples](Examples) folder contains more examples that demonstrates the RM syntax.
 
-### Options
+### Usage
 
-Usage: `mmzkrm {<options>} <src_file.rm> {<arguments>}`
+CLI Usage: `mmzkrm {<options>} <src_file.rm> {<arguments>}`
 
 Arguments:
   A list of non-negative positive integers assigned to the registers, starting from R1; R0 is set to 0.

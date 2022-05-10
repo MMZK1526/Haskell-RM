@@ -72,8 +72,10 @@ main = do
         Just args -> if any (< 0) args -- Run the program
           then putStrLn "The arguments must be non-negative!" >> help
           else do
-            let args'     = if isI0 config then args else 0 : args
-            let showRes r = do
+            let args'          = if isI0 config then args else 0 : args
+            let showRes RMLoop = putStrLn "The machine never terminates due to \
+                                          \an infinite loop!"
+                showRes r      = do
                   putStrLn $ "Execution finished after "
                           ++ show (resSteps r)
                           ++ if resSteps r == 1 then " step." else " steps."
