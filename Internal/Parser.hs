@@ -108,7 +108,7 @@ parseLine table i = do
       else return $ M.insert l i table
   eatSpaces
   line <- try parseM <|> try parseP <|> parseH
-  eatSpaces >> optional (char '#' >> noneOf "\r\n") >> eatSpaces
+  eatSpaces >> optional (char '#' >> many (noneOf "\r\n")) >> eatSpaces
   return (table, line)
   where
     parseP      = do

@@ -42,9 +42,9 @@ Despite its first appearance, Register Machines are actually very powerful: the 
 
 ### Performance
 
-As one may imagine, Register Machines are in general very inefficient since it can increment or decrement at most one register at a time. For example, the [adder machine](Examples/add.rm) which computes `f(x, y) = x + y` takes `x + y + 3` steps, and the [multiplier machine](Examples/mult.rm) which computes `f(x, y) = xy` takes `5xy + 3x + 2` steps. If we take the input size as the number of digits the inputs have, then these two "trivial" functions both have exponential time complexity.
+As one may imagine, Register Machines are in general very inefficient since it can increment or decrement at most one register at a time. For example, the [adder machine](Examples/add.rm) which computes `f(x, y) = x + y` takes `2(x + y) + 3` steps, and the [multiplier machine](Examples/mult.rm) which computes `f(x, y) = xy` takes `5xy + 3x + 2` steps. If we take the input size as the number of digits the inputs have, then these two "trivial" functions both have exponential time complexity.
 
-As a result, a naïve RM simulation is pretty useless except for extremely small inputs. In my implementation, the simulator analyses the control flow of the machine, detecting execution cycles, and execute the iterations in one go. For example, the adder machine consists of a R0-R1 cycle and a R0-R2 cycle where the contents of both inputs "flow" into R0. With my optimisation, each cycle only consists of one step during the simulation, making the execution *de juro* constant-time.
+As a result, a naïve RM simulation is pretty useless except for extremely small inputs. In my implementation, the simulator analyses the control flow of the machine, detecting execution cycles, and execute the iterations in one go. For example, the adder machine consists of a R0-R1 cycle and a R0-R2 cycle where the contents of both inputs "flow" into R0. With my optimisation, each cycle only consists of one step during the simulation so that the execution has *de juro* constant-time.
 
 This optimisation also makes simulating the [Universal Register Machine](#URM) possible.
 
@@ -373,7 +373,21 @@ By default, it shows 20 steps at a time. We can either press enter to show the n
 
 ### Syntax
 
-TODO
+In a RM source file, each line consists of an optional label, an instruction, and an optional comment.
+
+Labels are in the form of `AlphanumericLabel:`. They must start with a letter and be globally unique. If a line does not have a label, it can only be referred by its line number (starting from 0).
+
+Instruction has three types as expected:
+
+1. Halt: In the form of `H`, `HALT` or `ARRÊT`.
+2. Increment: In the form of `Rn+ lineNumOrLabel` where `Rn` is the register index and `lineNumOrLabel` can either be a label or a line number. For example, `R2+ 3` increments R2 and jumps to line 3.
+3. Decrement: In the form of `Rn- lineNumOrLabel lineNumOrLabel` where `Rn` and `lineNumOrLabel` are defined same as above. For example, `R0- 1 end` decrements R0 and jump to line 1 if R0 is positive, otherwise jump to the line that begins with the label `end`.
+
+Note that `R`, `+` and `-` can be ommited. For example, `R0- 1 end` is equivalent to `0 1 end`.
+
+Comments starts with a `#` and continues until the end of the line. Note that they must follow a valid instruction, in other words, comments are not allowed on their own lines.
+
+The [Examples](Examples) folder contains more examples that demonstrates the RM syntax.
 
 ### Options
 

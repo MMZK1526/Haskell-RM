@@ -1,5 +1,5 @@
-1- 1 2
-0+ 0
-2- 3 4
+start: R1- 1 2
+R0+ start # same as R0+ 0 since start refers to line 0
+R2 3 4 # R, + and - can be ommited
 0+ 2
-H
+H # can also be HALT or ARRÊT
