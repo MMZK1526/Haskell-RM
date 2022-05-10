@@ -34,9 +34,9 @@ L3: R0+ 2
 L4: HALT
 ```
 
-Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from line `0`; which decrements `R1` and goes to line `1`; which increments `R0` and goes back to line `0`; which goes to line `2` since `R1 = 0`; which decrements `R2` and goes to line `3`; which increments `R0` and goes to line `2`; which decrements `R2` and goes to line `3`; which increments `R0` and goes to line `2`; which goes to line `4` since `R2 = 0`; which halts with `R0 = 3`, `R1 = 0` and `R2 = 0`.
+Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from line 0; which decrements `R1` and goes to line 1; which increments R0 and goes back to line 0; which goes to line 2 since `R1 = 0`; which decrements R2 and goes to line 3; which increments R0 and goes to line 2; which decrements R2 and goes to line 3; which increments R0 and goes to line 3; which goes to line 4 since `R2 = 0`; which halts with `R0 = 3`, `R1 = 0` and `R2 = 0`.
 
-If we treat `R0` as the result and the other registers as the input, then a Register Machine that has registers from `R0` to `Rn` is a partial function from N^n to N (it is partial because the machine may not terminate, thus not providing any result). In our previous example, the function is `f(R1, R2) = R1 + R2`.  
+If we treat R0 as the result and the other registers as the input, then a Register Machine that has registers from R0 to R{n} is a partial function from N^n to N (it is partial because the machine may not terminate, thus not providing any result). In our previous example, the function is `f(R1, R2) = R1 + R2`.  
 
 Despite its first appearance, Register Machines are actually very powerful: the system is Turing-complete. This means they are capable of basically whatever modern computers can do.
 
@@ -44,7 +44,7 @@ Despite its first appearance, Register Machines are actually very powerful: the 
 
 As one may imagine, Register Machines are in general very inefficient since it can increment or decrement at most one register at a time. For example, the [adder machine](Examples/add.rm) which computes `f(x, y) = x + y` takes `x + y + 3` steps, and the [multiplier machine](Examples/mult.rm) which computes `f(x, y) = xy` takes `5xy + 3x + 2` steps. If we take the input size as the number of digits the inputs have, then these two "trivial" functions both have exponential time complexity.
 
-As a result, a naïve RM simulation is pretty useless except for extremely small inputs. In my implementation, the simulator analyses the control flow of the machine, detecting execution cycles, and execute the iterations in one go. For example, the adder machine consists of an R0-R1 cycle and R0-R2 cycle, where the contents of both inputs "flow" into R0. With my optimisation, each cycle only consists of one step during the simulation, making the execution *de juro* constant-time.
+As a result, a naïve RM simulation is pretty useless except for extremely small inputs. In my implementation, the simulator analyses the control flow of the machine, detecting execution cycles, and execute the iterations in one go. For example, the adder machine consists of a R0-R1 cycle and a R0-R2 cycle where the contents of both inputs "flow" into R0. With my optimisation, each cycle only consists of one step during the simulation, making the execution *de juro* constant-time.
 
 This optimisation also makes simulating the [Universal Register Machine](#URM) possible.
 
@@ -81,15 +81,15 @@ L|xs|L|xs
 8|[3]|18|[1, 2]
 9|[0, 2]|19|[0, 0, 2]
 
-There is a trick to "decode" a  to a list of numbers, namely expressing the  in binary form and count of  of zeros between ones from right to left. For example, 998 in binary is 1111100110, and if we count from the rightmost digit, it starts with 1 zero before reaching a one, then 0 zeros due to the consecutive ones, then 2 zeros, and so on. The result is then [1, 0, 2, 0, 0, 0, 0].
+There is a trick to "decode" a number to a list of numbers, namely expressing the number in binary form and count number of zeros between ones from right to left. For example, 998 in binary is 1111100110, and if we count from the rightmost digit, it starts with 1 zero before reaching a one, then 0 zeros due to the consecutive ones, then 2 zeros, and so on. The result is then [1, 0, 2, 0, 0, 0, 0].
 
-With the functions `p` and `p'`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register  `r` with a line  `l`, and we encode it with `p(2r, l)`; if it is a decrement, then it has a register  `r` with two line numbers `l1` and `l2`, and we encode it with `p(2r + 1, p'(l1, l2))`.
+With the functions `p` and `p'`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register number `r` with a line number `l`, and we encode it with `p(2r, l)`; if it is a decrement, then it has a register number `r` with two line numbers `l1` and `l2`, and we encode it with `p(2r + 1, p'(l1, l2))`.
 
-Finally, once we encode each line of a Register Machine into a , we can then encode the list of number into a single  by `s`.
+Finally, once we encode each line of a Register Machine into a , we can then encode the list of number into a single number by `s`.
 
-One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel  of `s([152, 1, 4576, 5, 0])`, a  larger than 10^1426.
+One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel number of `s([152, 1, 4576, 5, 0])`, a number larger than 10^1426.
 
-If we convert a natual  to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line . This does not cause any problem, however, since we treat bad line number as Halt instructions.
+If we convert a natual number to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line . This does not cause any problem, however, since we treat bad line number as Halt instructions.
 
 In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
 
