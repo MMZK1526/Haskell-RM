@@ -59,11 +59,14 @@ main :: IO ()
 main = do
   (opts, rawArgs, errs) <- getOpt Permute optionTable <$> getArgs
   let config = mkConfig opts
-  if   null rawArgs || not (null $ errs ++ errors config)
-  then forM_ errs putStr >> forM_ (nub (errors config)) putStrLn >> help
-  else do
-    file : args <- return rawArgs
-    handleDNE ((>> help) . print) $ do
+  if null rawArgs || not (null $ errs ++ errors config)
+    then forM_ errs putStr >> forM_ (nub (errors config)) putStrLn >> help
+    else execute config rawArgs
+
+execute :: CLIConfig -> [FilePath] -> IO ()
+execute config rawArgs = do
+  file : args <- return rawArgs
+  handleDNE ((>> help) . print) $ do
     text <- readFile file
     case rmParser text of
       Left error -> putStrLn error >> help -- Error parsing source code

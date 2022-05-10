@@ -1,4 +1,4 @@
-R1- 1 4 # If R1 != 0, infinite cycle
-R0+ 2
-R1+ 0
-ARRÊT
+L0: R1- L1 L3 # If R1 != 0, infinite cycle
+L1: R0+ L2
+L2: R1+ L0
+L3: ARRÊT

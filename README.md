@@ -34,7 +34,7 @@ L3: R0+ 2
 L4: HALT
 ```
 
-Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from line 0; which decrements `R1` and goes to line 1; which increments R0 and goes back to line 0; which goes to line 2 since `R1 = 0`; which decrements R2 and goes to line 3; which increments R0 and goes to line 2; which decrements R2 and goes to line 3; which increments R0 and goes to line 3; which goes to line 4 since `R2 = 0`; which halts with `R0 = 3`, `R1 = 0` and `R2 = 0`.
+Assume `R0 = 0`, `R1 = 1` and `R2 = 2`. We start from line 0; which decrements R1 and goes to line 1; which increments R0 and goes back to line 0; which goes to line 2 since `R1 = 0`; which decrements R2 and goes to line 3; which increments R0 and goes to line 2; which decrements R2 and goes to line 3; which increments R0 and goes to line 3; which goes to line 4 since `R2 = 0`; which halts with `R0 = 3`, `R1 = 0` and `R2 = 0`.
 
 If we treat R0 as the result and the other registers as the input, then a Register Machine that has registers from R0 to R{n} is a partial function from N^n to N (it is partial because the machine may not terminate, thus not providing any result). In our previous example, the function is `f(R1, R2) = R1 + R2`.  
 
@@ -70,7 +70,7 @@ p'|p|(x, y)
 
 With `p`, we can recursively define a function, `s`, that is a bijection between finite lists of natural number and singular natural number: `s([]) = 0; s(x : xs) = p(x, s(xs))`:
 
-L|xs|L|xs
+s|xs|s|xs
 ----|---|----|---
 0|[]|10|[1, 1]
 1|[0]|11|[0, 0, 1]
@@ -454,7 +454,7 @@ Options:
   L1: HALT
   ```  
 
-  * Note that since the Gödel  of Register Machines "grows" very quickly, it is usually pointless trying to compute the entire  for machines of interests. An alternative is to view the list representation of a machine via `toList`.  
+  * Note that since the Gödel number of Register Machines "grows" very quickly, it is usually pointless trying to compute the entire number for machines of interests. An alternative is to view the list representation of a machine via `toList`.  
 
 * `fromList :: LineLike l => [l] -> RMCode`:  
   * Decodes a list of `Linelike`s (namely `Line` or `Integer`) into a Register Machine `RMCode`.  
