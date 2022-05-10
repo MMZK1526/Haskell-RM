@@ -2,7 +2,7 @@
 
 By MMZK1526 *a.k.a.* Yìtáng Chén
 
-A CLI that evaluates [**Register Machines**](#RegisterMachine) efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
+A CLI that evaluates [**Register Machines**](#Register-Machine) efficiently in `Haskell`. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 
