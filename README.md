@@ -395,16 +395,28 @@ The [Examples](Examples) folder contains more examples that demonstrates the RM 
 
 ### Usage
 
-CLI Usage: `mmzkrm {<options>} <src_file.rm> {<arguments>}`
+#### RM Simulation
 
-Arguments:
-  A list of non-negative positive integers assigned to the registers, starting from R1; R0 is set to 0.
+`mmzkrm {<options>} <src_file.rm> {<arguments>}`
 
-Options:
+#### Gôdel Number Decoding
+
+`mmzkrm -d <gödel_number>`
+
+#### Arguments
+
+* `<src_file.rm>`: The path to source file containing a register machine.
+* `{<argument>}`: A list of positive integers assigned to the registers, starting from R1; R0 is set to 0. Unspecified arguments default to 0.
+
+#### Options
+
   Short | Long | Description
   -|-|-
   `-i` |`--initial`|          Starts the arguments from R0.
   `-s[20]`|  `--step[=20]` | Show the configuration after each step of evaluation. `--step=x` shows x steps at a time. Enter `quit` to jump to the result.
+  `-d`   |   `--decode`  |  Decode the following Gödel number.
+
+If an option is provided more than once, its first occurrence is picked.
 
 ## Documentation
 

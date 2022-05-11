@@ -37,7 +37,7 @@ instance Show RMCode where
   show (RMCode arr)
     | null arr  = "[EMPTY MACHINE]"
     | otherwise = tail
-                $ foldr (\(i, l) l'-> concat ["\nL", show i, ": ", l, l'])
+                $ foldr (\(i, l) l'-> concat ["\nL", show i, ":\t", l, l'])
                   "" . zip [0..] $ show <$> toList arr
 
 -- | Gets the number of registers from "RMCode".
