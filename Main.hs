@@ -36,7 +36,7 @@ mkConfig = foldl go
       Nothing -> opts { detailSteps = Just n }
       _       -> opts
     go opts (Error e)  = opts { errors = e : errors opts }
-    go opts (Job j)  = case job opts of
+    go opts (Job j)    = case job opts of
       Decode   -> opts
       Encode   -> opts
       Simulate -> opts { job = j }
@@ -49,6 +49,7 @@ help = do
   putStrLn "Usage:"
   putStrLn "  Simulation\tmmzkrm {<options>} <src_file.rm> {<argument>}"
   putStrLn "  Decoding\tmmzkrm -d <gödel_number>\n"
+  putStrLn "  Encoding\tmmzkrm -e (<src_file.rm> | {<argument>})\n"
   putStrLn "Arguments:"
   putStrLn "  <src_file.rm>\tThe path to source file containing a register \
            \machine."
@@ -58,13 +59,16 @@ help = do
   putStrLn (usageInfo "Options:" optionTable)
 
 optionTable :: [OptDescr CLIOption]
-optionTable = [ Option "i" ["initial"] (NoArg I0) "Starts the arguments from R0."
-              , Option "s" ["step"] (OptArg intDef20 "20") "Show the \
-                \configuration after each step of evaluation. \"--step=x\" \
-                \shows x steps at a time. Enter \"quit\" to jump to the \
-                \result."
-              , Option "d" ["decode"] (NoArg (Job Decode)) "Decode the \
-                \following Gödel number." ]
+optionTable
+  = [ Option "i" ["initial"] (NoArg I0) "Starts the arguments from R0."
+    , Option "s" ["step"] (OptArg intDef20 "20") "Show the configuration after \
+      \each step of evaluation. \"--step=x\" shows x steps at a time. Enter \
+      \\"quit\" to jump to the result."
+    , Option "d" ["decode"] (NoArg (Job Decode)) "Decode the following Gödel \
+      \number."
+    , Option "e" ["encode"] (NoArg (Job Encode)) "Encode the input, which \
+      \could be a list of numbers separated by spaces, a pair of numbers, or \
+      \the the path to a source file." ]
   where
     intDef20 Nothing    = Detail 20
     intDef20 (Just str) = case readMaybe str of
@@ -82,7 +86,7 @@ main = do
     else case job config of
       Simulate -> execute config rawArgs
       Decode   -> decode config rawArgs
-      Encode   -> undefined
+      Encode   -> encode config rawArgs
 
 decode :: CLIConfig -> [String] -> IO ()
 decode config []   = putStrLn "Please enter an argument!\n" >> help
@@ -97,6 +101,10 @@ decode config args = do
       putStrLn $ "Line: " ++ show (decodeLine n)
       putStrLn "Register Machine: "
       print $ decodeRM n
+
+encode :: CLIConfig -> [String] -> IO ()
+encode config []   = putStrLn "Please enter an argument!\n" >> help
+encode config args = do undefined
 
 execute :: CLIConfig -> [String] -> IO ()
 execute config []      = putStrLn "Please enter an argument!\n" >> help

@@ -403,6 +403,10 @@ The [Examples](Examples) folder contains more examples that demonstrates the RM 
 
 `mmzkrm -d <gödel_number>`
 
+#### Gôdel Number Encoding
+
+`mmzkrm -d (<src_file.rm> | {<argument>})`
+
 #### Arguments
 
 * `<src_file.rm>`: The path to source file containing a register machine.
@@ -415,6 +419,7 @@ The [Examples](Examples) folder contains more examples that demonstrates the RM 
   `-i` |`--initial`|          Starts the arguments from R0.
   `-s[20]`|  `--step[=20]` | Show the configuration after each step of evaluation. `--step=x` shows x steps at a time. Enter `quit` to jump to the result.
   `-d`   |   `--decode`  |  Decode the following Gödel number.
+  `-e`   |   `--encode`  | ncode the input, which could be a list of numbers separated by spaces, a pair of numbers, or the the path to a source file.
 
 If an option is provided more than once, its first occurrence is picked.
 
