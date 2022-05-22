@@ -3,7 +3,10 @@ module Main where
 import           Control.Monad
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Except
+import           Data.Array
 import           Data.Char
+import           Data.Functor
+import           Data.Maybe
 import           Data.List
 import           Gadgets.IO
 import           Internal.Definitions
@@ -17,23 +20,25 @@ import           System.Console.GetOpt
 import           System.Environment
 import           Text.Read (readMaybe)
 
-data CLIOption = I0 | Detail Int | Error String | Job Job
+data CLIOption = I0 | Detail Int | Error String | Job Job | FORCED
   deriving (Eq, Show)
 data Job = Decode | Encode | Simulate
   deriving (Eq, Show)
 
-data CLIConfig = CLIOptions { isI0 :: Bool
+data CLIConfig = CLIOptions { isI0        :: Bool
                             , detailSteps :: Maybe Int
-                            , job :: Job
-                            , errors :: [String] }
+                            , job         :: Job
+                            , errors      :: [String]
+                            , forced      :: Bool }
   deriving (Eq, Show)
 
 mkConfig :: [CLIOption] -> CLIConfig
 mkConfig = foldl go
          $ CLIOptions { isI0 = False, detailSteps = Nothing, errors = []
-                      , job = Simulate }
+                      , job = Simulate, forced = False }
   where
     go opts I0         = opts { isI0 = True }
+    go opts FORCED     = opts { forced = True }
     go opts (Detail n) = case detailSteps opts of
       Nothing -> opts { detailSteps = Just n }
       _       -> opts
@@ -70,7 +75,11 @@ optionTable
       \number."
     , Option "e" ["encode"] (NoArg (Job Encode)) "Encode the input, which \
       \could be a list of numbers separated by spaces, a pair of numbers, or \
-      \the the path to a source file." ]
+      \the the path to a source file. By default, if the resultant number is \
+      \too large, it will not be shown."
+    , Option "f" ["force"] (NoArg FORCED) "Used with the encode option. Show \
+      \the result regardless of its size. Note that this may cause the program \
+      \to stall indefinitely if the number is too large." ]
   where
     intDef20 Nothing    = Detail 20
     intDef20 (Just str) = case readMaybe str of
@@ -109,25 +118,31 @@ encode config []   = putStrLn "Please enter an argument!\n" >> help
 encode config args = do
   result <- runExceptT $ msum [asCode (head args), asList args]
   case result of
-    Left _  -> putStrLn "Cannot parse arguments as file path or number list!\n" 
+    Left _  -> putStrLn "Cannot parse arguments as file path or number list!\n"
             >> help
     Right _ -> pure ()
   where
+    isForced    = forced config
     asCode arg  = do
-      code <- ExceptT $ openRM arg
-      let lineCodes = toList code :: [Integer]
-      lift . putStrLn $ "Encode each line: " ++ show lineCodes
-      lift $ if sum (succ <$> lineCodes) > 6251
+      code@(RMCode arr) <- ExceptT $ openRM arg
+      let lineCodes = flip map (elems arr) $ \line -> case line of 
+            P n i   -> guard (n <= 6251 || isForced) $> encodeLine line
+            M n i j -> guard ((n <= 6251 && i <= 6251) || isForced)
+                    $> encodeLine line
+            H       -> Just $ encodeLine line
+      lift . putStrLn $ "Encode each line: " ++ "["
+        ++ intercalate ", " (maybe "<large number>" show <$> lineCodes) ++ "]"
+      lift $ if sum (succ <$> catMaybes lineCodes) > 6251 && not isForced
         then putStrLn "The Gödel number of this Register Machine is too large."
         else putStrLn $ "Gödel number: " ++ show (encodeRM code)
     asList args = do
       list <- except $ maybe (Left "") Right (sequence $ readMaybe <$> args)
       lift $ case list of
-        [x, y] -> if x > 6251
+        [x, y] -> if x > 6251 && not isForced
           then putStrLn "The encoding of this pair is too large."
           else putStrLn $ "Encode from pair: " ++ show (encodePair x y)
         _      -> pure ()
-      lift $ if sum (succ <$> list) > 6251
+      lift $ if sum (succ <$> list) > 6251 && not isForced
         then putStrLn "The encoding of this list is too large."
         else putStrLn $ "Encode from list: " ++ show (encodeList list)
 

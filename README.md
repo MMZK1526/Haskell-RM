@@ -405,7 +405,7 @@ The [Examples](Examples) folder contains more examples that demonstrates the RM 
 
 #### Gôdel Number Encoding
 
-`mmzkrm -d (<src_file.rm> | {<argument>})`
+`mmzkrm -e (<src_file.rm> | {<argument>})`
 
 #### Arguments
 
@@ -418,8 +418,9 @@ The [Examples](Examples) folder contains more examples that demonstrates the RM 
   -|-|-
   `-i` |`--initial`|          Starts the arguments from R0.
   `-s[20]`|  `--step[=20]` | Show the configuration after each step of evaluation. `--step=x` shows x steps at a time. Enter `quit` to jump to the result.
-  `-d`   |   `--decode`  |  Decode the following Gödel number.
-  `-e`   |   `--encode`  | ncode the input, which could be a list of numbers separated by spaces, a pair of numbers, or the the path to a source file.
+  `-d`   |   `--decode`  | Decode the following Gödel number.
+  `-e`   |   `--encode`  | Encode the input, which could be a list of numbers separated by spaces, a pair of numbers, or the the path to a source file. By default, if the resultant number is too large, it will not be shown.
+  `-f`   |   `--force`  | Used with the `--encode` option. Show the result regardless of its size. Note that this may cause the program to stall indefinitely if the number is too large.
 
 If an option is provided more than once, its first occurrence is picked.
 
