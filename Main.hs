@@ -1,6 +1,8 @@
 module Main where
 
 import           Control.Monad
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Except
 import           Data.Char
 import           Data.List
 import           Gadgets.IO
@@ -13,7 +15,7 @@ import           Internal.RMCode
 import           Internal.Utilities
 import           System.Console.GetOpt
 import           System.Environment
-import           Text.Read
+import           Text.Read (readMaybe)
 
 data CLIOption = I0 | Detail Int | Error String | Job Job
   deriving (Eq, Show)
@@ -96,55 +98,80 @@ decode config args = do
     Just n  -> do
       putStrLn $ if n == 0
         then "Cannot decode 0 into pairs."
-        else "Pair: " ++ show (decodePair n)
-      putStrLn $ "List: " ++ show (decodeList n)
-      putStrLn $ "Line: " ++ show (decodeLine n)
-      putStrLn "Register Machine: "
+        else "Decode to pair: " ++ show (decodePair n)
+      putStrLn $ "Decode to list: " ++ show (decodeList n)
+      putStrLn $ "Decode to line: " ++ show (decodeLine n)
+      putStrLn "Decode to Register Machine: "
       print $ decodeRM n
 
 encode :: CLIConfig -> [String] -> IO ()
 encode config []   = putStrLn "Please enter an argument!\n" >> help
-encode config args = do undefined
+encode config args = do
+  result <- runExceptT $ msum [asCode (head args), asList args]
+  case result of
+    Left _  -> putStrLn "Cannot parse arguments as file path or number list!\n" 
+            >> help
+    Right _ -> pure ()
+  where
+    asCode arg  = do
+      code <- ExceptT $ openRM arg
+      let lineCodes = toList code :: [Integer]
+      lift . putStrLn $ "Encode each line: " ++ show lineCodes
+      lift $ if sum (succ <$> lineCodes) > 6251
+        then putStrLn "The Gödel number of this Register Machine is too large."
+        else putStrLn $ "Gödel number: " ++ show (encodeRM code)
+    asList args = do
+      list <- except $ maybe (Left "") Right (sequence $ readMaybe <$> args)
+      lift $ case list of
+        [x, y] -> if x > 6251
+          then putStrLn "The encoding of this pair is too large."
+          else putStrLn $ "Encode from pair: " ++ show (encodePair x y)
+        _      -> pure ()
+      lift $ if sum (succ <$> list) > 6251
+        then putStrLn "The encoding of this list is too large."
+        else putStrLn $ "Encode from list: " ++ show (encodeList list)
+
+openRM :: String -> IO (Either String RMCode)
+openRM path = handleDNE (pure . Left . show) $ rmParser <$> readFile path
 
 execute :: CLIConfig -> [String] -> IO ()
 execute config []      = putStrLn "Please enter an argument!\n" >> help
 execute config rawArgs = do
   file : args <- return rawArgs
-  handleDNE ((>> help) . print) $ do
-    text <- readFile file
-    case rmParser text of
-      Left error -> putStrLn error >> help -- Error parsing source code
-      Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
-        Nothing   -> putStrLn "Error parsing the arguments!\n" >> help
-        Just args -> if any (< 0) args -- Run the program
-          then putStrLn "The arguments must be non-negative!\n" >> help
-          else do
-            let args'          = if isI0 config then args else 0 : args
-            let showRes RMLoop = putStrLn "The machine never terminates due to \
-                                          \an infinite loop!"
-                showRes r      = do
-                  putStrLn $ "Execution finished after "
-                          ++ show (resSteps r)
-                          ++ if resSteps r == 1 then " step." else " steps."
-                  putStrLn "Register values: "
-                  forM_ (zip [0..] $ resRegs r) $ \(i, r) ->
-                    putStrLn $ "  R" ++ show i ++ ": " ++ show r
-            result <- case detailSteps config of
-              Nothing   -> pure $ runRM code args'
-              Just step -> do
-                rm <- initRMIO code args'
-                let go i rm = do
-                      (rm, mResult) <- runRMIO rm (i, step)
-                      case mResult of
-                        Just r  -> pure r
-                        Nothing -> do
-                          l <- getLine
-                          case toLower <$> l of
-                            "q"    -> pure $ runRM code args'
-                            "quit" -> pure $ runRM code args'
-                            _      -> go (i + step) rm
-                go 1 rm
-            showRes result
+  ecode       <- openRM file
+  case ecode of
+    Left error -> print error >> help -- Error parsing source code
+    Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
+      Nothing   -> putStrLn "Error parsing the arguments!\n" >> help
+      Just args -> if any (< 0) args -- Run the program
+        then putStrLn "The arguments must be non-negative!\n" >> help
+        else do
+          let args'          = if isI0 config then args else 0 : args
+          let showRes RMLoop = putStrLn "The machine never terminates due to \
+                                        \an infinite loop!"
+              showRes r      = do
+                putStrLn $ "Execution finished after "
+                        ++ show (resSteps r)
+                        ++ if resSteps r == 1 then " step." else " steps."
+                putStrLn "Register values: "
+                forM_ (zip [0..] $ resRegs r) $ \(i, r) ->
+                  putStrLn $ "  R" ++ show i ++ ": " ++ show r
+          result <- case detailSteps config of
+            Nothing   -> pure $ runRM code args'
+            Just step -> do
+              rm <- initRMIO code args'
+              let go i rm = do
+                    (rm, mResult) <- runRMIO rm (i, step)
+                    case mResult of
+                      Just r  -> pure r
+                      Nothing -> do
+                        l <- getLine
+                        case toLower <$> l of
+                          "q"    -> pure $ runRM code args'
+                          "quit" -> pure $ runRM code args'
+                          _      -> go (i + step) rm
+              go 1 rm
+          showRes result
 
 
 --------------------------------------------------------------------------------
