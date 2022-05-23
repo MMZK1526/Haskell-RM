@@ -16,6 +16,7 @@ decodeLine n
 -- | Encodes a "Line" into an "Integer".
 encodeLine :: Line -> Integer
 encodeLine H         = 0
-encodeLine (P x y)   = encodePair (2 * x) y
-encodeLine (M x y z) = encodePair (2 * x + 1) $
-                                  encodePair y z - 1
+encodeLine (P x y)   = encodePair (2 * fromIntegral x) (fromIntegral y)
+encodeLine (M x y z) = encodePair (2 * fromIntegral x + 1) $
+                                  encodePair (fromIntegral y)
+                                             (fromIntegral z) - 1
