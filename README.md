@@ -93,7 +93,7 @@ One can verify that the "adder" machine in [Introduction](#Introduction) has a G
 
 If we convert a natual number to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line . This does not cause any problem, however, since we treat bad line number as Halt instructions.
 
-In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert).
+In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert). Moreover, the CLI also provides encoding/decoding intructions, see [Usage](#Usage).
 
 ### Universal Register Machine
 
@@ -374,6 +374,10 @@ R2: 5
 By default, it shows 20 steps at a time. We can either press enter to show the next 20 steps, or enter `quit` to jump to the final result. The  of steps per output is configuable, see [Usage](#Usage) for the details (as well as more options).
 
 Note that when the show-step option is enabled, the simulator does not conduct the check on infinite loops.
+
+### Simulation
+
+TODO
 
 ### Syntax
 
