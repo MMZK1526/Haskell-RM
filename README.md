@@ -389,6 +389,8 @@ Instruction has three types as expected:
 
 Note that `R`, `+` and `-` can be ommited. For example, `R0- 1 end` is equivalent to `0 1 end`.
 
+If a label never is never defined, it is treated as a Halt instruction.
+
 Comments starts with "#" and continues until the end of the line. Note that they must follow a valid instruction, in other words, comments are not allowed on their own lines.
 
 The [Examples](Examples) folder contains more examples that demonstrates the RM syntax.
