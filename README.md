@@ -87,7 +87,7 @@ There is a trick to "decode" a number to a list of numbers, namely expressing th
 
 With the functions `p` and `p'`, we can then encode each line of a Register Machine. If the instruction is `HALT`, encode it with 0; if it is an increment, then it has a register number `r` with a line number `l`, and we encode it with `p(2r, l)`; if it is a decrement, then it has a register number `r` with two line numbers `l1` and `l2`, and we encode it with `p(2r + 1, p'(l1, l2))`.
 
-Finally, once we encode each line of a Register Machine into a , we can then encode the list of number into a single number by `s`.
+Finally, once we encode each line of a Register Machine into a number, we can then encode the list of number into a single number by `s`.
 
 One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel number of `s([152, 1, 4576, 5, 0])`, a number larger than 10^1426.
 
@@ -111,7 +111,7 @@ Of course, such a definition is quite imprecise, as we have not yet defined what
 
 On first glance, we may believe that all functions are computable. This is, however, not the case. Thanks to [Gödelisation](#Gödelisation), we can prove so via Cantor's diagonal argument:
 
-We can list Register Machines by their corresponding Gödel , *i.e.* `RM0`, `RM1` *etc.* These machines all have corresponding functions that they implement, *i.e.* `f0`, `f1` *etc.*:
+We can list Register Machines by their corresponding Gödel number, *i.e.* `RM0`, `RM1` *etc.* These machines all have corresponding functions that they implement, *i.e.* `f0`, `f1` *etc.*:
 
 Gödel |Machine|Function
 -|-|-
