@@ -130,11 +130,13 @@ encode config args = do
             M n i j -> guard ((n <= 6251 && i <= 6251) || isForced)
                     $> encodeLine line
             H       -> Just $ encodeLine line
-      lift . putStrLn $ "Encode each line: " ++ "["
-        ++ intercalate ", " (maybe "<large number>" show <$> lineCodes) ++ "]"
-      lift $ if sum (succ <$> catMaybes lineCodes) > 6251 && not isForced
-        then putStrLn "The Gödel number of this Register Machine is too large."
-        else putStrLn $ "Gödel number: " ++ show (encodeRM code)
+      lift $ do 
+        putStrLn "Encode each line: "
+        forM_ (maybe "<large number>" show <$> lineCodes)
+          $ putStrLn . ("  " ++)
+        putStrLn $ if sum (succ <$> catMaybes lineCodes) > 6251 && not isForced
+          then "The Gödel number of this Register Machine is too large."
+          else "Gödel number: " ++ show (encodeRM code)
     asList args = do
       list <- except $ maybe (Left "") Right (sequence $ readMaybe <$> args)
       lift $ case list of

@@ -430,7 +430,7 @@ Register values:
   R9: 0
 ```
 
-It takes a few second to run on my computer, but is nevertheless feasible.
+It takes a few second to run on my computer, but is nevertheless feasible and terminates with the correct R0 value (7 + 5 = 12).
 
 One can even take another leap forward and attempt the same input on the [multiplier machine](Examples/mult.rm). On my computer, this would take a couple of minutes. If we increase the inputs, the encoding would grow exponentially and the execution time would also blow up. On the other hand, if we try to simulate complex machines, their Gödel numbers would become unreasonably large. For example, the [collatz program](Examples/collatz.rm) in the previous section has a Gödel number with a size comparable to my RAM when written out. Therefore, simulating any more complex computations would be quite impractical.
 
