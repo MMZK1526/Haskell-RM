@@ -114,9 +114,8 @@ decode config args = do
       print $ decodeRM n
 
 encode :: CLIConfig -> [String] -> IO ()
-encode config []   = putStrLn "Please enter an argument!\n" >> help
 encode config args = do
-  result <- runExceptT $ msum [asCode (head args), asList args]
+  result <- runExceptT $ msum [asCode (head $ args ++ [""]), asList args]
   case result of
     Left _  -> putStrLn "Cannot parse arguments as file path or number list!\n"
             >> help

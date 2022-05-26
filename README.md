@@ -112,7 +112,23 @@ R0+ 0
 
 It represents the function `f(x) = x`, thus if we run it with a single argument 10, then the result should also be 10. The Gödel number of this machine is 28544953854119197621165719388989902727654932480, and the encoding of the singleton list is `s([10]) = 1024`. Therefore, if we run the URM with R1 = 28544953854119197621165719388989902727654932480 and R2 = 1024, it should simulate running `M` on the single input 10, which results in 10.
 
-TODO
+There are many ways to implement a URM, and our approach will be based on three "components", or **Gadgets**.
+
+Firstly, we need the copy machine `C`, which copies R1 into R0 without changing R1 itself and leaves all other registers intact. This is implemented as follow:
+
+```RM
+L0: R1- 1 3
+L1: R0+ 2
+L2: R2+ 0
+L3: R2- L4 H
+L4: R1+ L3
+```
+
+Basically, whenever the machine decrements R1, it increments both R0 and R2. When R1 is emptied, it then "pour" R2 back to R1, effectively copying R1 to R0.
+
+There are two subtleties. Firstly, we can easily change R1 and R0 to any two registers and conduct the same process of copying; if R2 is involved, we just need to change the "scratch register" to something else. Thus, we write `C(m, n)` as the machine that copies R{m} to R{n}. In particular, our original `C` is `C(1, 0)`.
+
+Secondly, the `H` label represents a line number that does not exist, thus effectively halts the machine, but we can change it to another valid line number `l`, then the effect is "copy R1 to R0 and go to line `l`". In this way, we can treat this copy machine as a sub-routine that can be wired into larger machines.
 
 A complete URM implementation is provided [here](Examples/urm.rm), and despite it takes absurdly many steps to carry out any useful simulation, this program makes such simulation possible, as demonstrated [here](#simulation).
 
