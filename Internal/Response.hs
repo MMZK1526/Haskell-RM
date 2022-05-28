@@ -9,7 +9,7 @@ import qualified Data.Map as M
 newtype Response = Response (Map String Value)
   deriving (Ord, Eq)
 
-data Value = Int Integer | Bool Bool | String String | Resp Response
+data Value = Int { int_ :: Integer } | Bool Bool | String String | Resp Response
            | Values [Value]
   deriving (Ord, Eq)
 
@@ -47,6 +47,11 @@ getBool :: Response -> String -> Maybe Bool
 getBool resp key = getValue resp key >>= \case
   Bool r -> pure r
   _      -> Nothing
+
+getString :: Response -> String -> Maybe String
+getString resp key = getValue resp key >>= \case
+  String r -> pure r
+  _        -> Nothing
 
 mkResponse :: [(String, Value)] -> Response
 mkResponse = Response . M.fromList

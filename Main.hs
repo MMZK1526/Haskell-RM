@@ -114,15 +114,26 @@ decode config []   = if useJSON config
   else putStrLn "Please enter an argument!\n" >> help
 decode config args = do
   case readMaybe (head args) of
-    Nothing -> putStrLn "The Gödel number must be non-negative!\n" >> help
+    Nothing -> if useJSON config
+      then print (mkErrResponse ["The Gödel number must be non-negative!"])
+      else putStrLn "The Gödel number must be non-negative!\n" >> help
     Just n  -> do
-      putStrLn $ if n == 0
-        then "Cannot decode 0 into pairs."
-        else "Decode to pair: " ++ show (decodePair n)
-      putStrLn $ "Decode to list: " ++ show (decodeList n)
-      putStrLn $ "Decode to line: " ++ show (decodeLine n)
-      putStrLn "Decode to Register Machine: "
-      print $ decodeRM n
+      let pairResp = mkResponse
+            [ ("decodeToPair", let (x, y) = decodePair n
+                               in  Values [Int x, Int y]) | n /= 0 ]
+      let listResp = mkResponse
+            [("decodeToList", Values $ Int <$> decodeList n)]
+      let rmResp   = mkResponse [("decodeToRM", String . show $ decodeRM n)]
+      if useJSON config
+        then print (noErr $ pairResp <> listResp <> rmResp)
+        else do
+          putStrLn $ case getValues pairResp "decodeToPair" of
+            Just [Int x, Int y] -> "Decode to pair: " ++ show (x, y)
+            _                   -> "Cannot decode 0 into pairs."
+          putStr "Decode to list: "
+          print $ int_ <$> fromJust (getValues listResp "decodeToList")
+          putStrLn "Decode to Register Machine: "
+          putStrLn . fromJust $ getString rmResp "decodeToRM"
 
 encode :: CLIConfig -> [String] -> IO ()
 encode config args = do
@@ -194,7 +205,7 @@ encode config args = do
         Just pairEncode -> lift . putStrLn
                          $ if fromJust $ getBool pairEncode "isTooBig"
           then "The encoding of this pair is too large."
-          else "Encode from pair: " 
+          else "Encode from pair: "
             ++ read (show (fromJust $ getValue pairEncode "num"))
 
 openRM :: String -> IO (Either String RMCode)
