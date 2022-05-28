@@ -21,7 +21,7 @@ instance Show Response where
              , "}" ]
 
 instance Show Value where
-  show (Int i)    = show i
+  show (Int i)    = show $ show i
   show (String n) = show n
   show (Bool b)   = show b
   show (Resp r)   = show r

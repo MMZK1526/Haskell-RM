@@ -175,25 +175,27 @@ encode config args = do
       lift . forM_ lineEncode $ \line -> do
         putStr "  "
         let Resp r = line
-        if fromJust $ getBool r "isTooBig"
-          then putStrLn "<large number>"
-          else print . fromJust $ getValue r "num"
+        putStrLn $ if fromJust $ getBool r "isTooBig"
+          then "<large number>"
+          else read . show . fromJust $ getValue r "num"
       rmEncode   <- MaybeT . return $ getResp r "encodeFromRM"
       lift . putStrLn $ if fromJust $ getBool rmEncode "isTooBig"
         then "The Gödel number of this Register Machine is too large."
-        else "Gödel number: " ++ show (fromJust $ getValue rmEncode "num")
+        else "Gödel number: "
+          ++ read (show (fromJust $ getValue rmEncode "num"))
     fromList r  = do
       listEncode <- MaybeT . return $ getResp r "encodeFromList"
       lift . putStrLn $ if fromJust $ getBool listEncode "isTooBig"
         then "The encoding of this list is too large."
-        else "Encode from list: " ++ show (fromJust $ getValue listEncode "num")
+        else "Encode from list: "
+          ++ read (show (fromJust $ getValue listEncode "num"))
       case getResp r "encodeFromPair" of
         Nothing         -> pure ()
         Just pairEncode -> lift . putStrLn
                          $ if fromJust $ getBool pairEncode "isTooBig"
           then "The encoding of this pair is too large."
           else "Encode from pair: " 
-            ++ show (fromJust $ getValue pairEncode "num")
+            ++ read (show (fromJust $ getValue pairEncode "num"))
 
 openRM :: String -> IO (Either String RMCode)
 openRM path = handleIO (pure . Left . show) $ rmParser <$> readFile path
