@@ -127,13 +127,14 @@ decode config args = do
 encode :: CLIConfig -> [String] -> IO ()
 encode config args = do
   result <- runExceptT $ msum [asCode (head $ args ++ [""]), asList args]
+  let errMsg = "Cannot parse arguments as file path or number list!"
   case result of
-    Left _  -> putStrLn "Cannot parse arguments as file path or number list!\n"
-            >> help
+    Left _  -> if useJSON config
+      then print $ mkErrResponse [errMsg]
+      else putStrLn errMsg >> putStrLn "" >> help
     Right r -> if useJSON config
-      then print r
+      then print $ noErr r
       else void . runMaybeT $ msum [fromCode r, fromList r]
-
   where
     mkMaybeResp Nothing
       = mkResponse [("isTooBig", Bool True)]

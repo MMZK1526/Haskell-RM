@@ -51,6 +51,9 @@ getBool resp key = getValue resp key >>= \case
 mkResponse :: [(String, Value)] -> Response
 mkResponse = Response . M.fromList
 
+noErr :: Response -> Response
+noErr = (mkResponse [("hasError", Bool False)] <>)
+
 mkErrResponse :: [String] -> Response
 mkErrResponse errs = mkResponse [ ("hasError", Bool True), ("errors"
                                 , Values (String <$> errs)) ]
