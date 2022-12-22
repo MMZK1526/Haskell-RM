@@ -257,7 +257,7 @@ Once the Haskell environment is set up, make sure the packages `containers` and 
   cabal install --lib parsec
 ```
 
-Then the CLI can be compiled by running `ghc -O3 Main -o mmzkrm` from the root directory. It is going to generate an executable called `mmzkrm`.
+Then the CLI can be compiled by running `ghc -O3 Main -o mmzkrm -package parsec` from the root directory. It is going to generate an executable called `mmzkrm`.
 
 ### Example
 
