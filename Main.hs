@@ -112,28 +112,27 @@ decode :: CLIConfig -> [String] -> IO ()
 decode config []   = if useJSON config
   then print (mkErrResponse ["Please enter an argument!"])
   else putStrLn "Please enter an argument!\n" >> help
-decode config args = do
-  case readMaybe (head args) of
-    Nothing -> if useJSON config
-      then print (mkErrResponse ["The Gödel number must be non-negative!"])
-      else putStrLn "The Gödel number must be non-negative!\n" >> help
-    Just n  -> do
-      let pairResp = mkResponse
-            [ ("decodeToPair", let (x, y) = decodePair n
-                               in  Values [Int x, Int y]) | n /= 0 ]
-      let listResp = mkResponse
-            [("decodeToList", Values $ Int <$> decodeList n)]
-      let rmResp   = mkResponse [("decodeToRM", String . show $ decodeRM n)]
-      if useJSON config
-        then print (noErr $ pairResp <> listResp <> rmResp)
-        else do
-          putStrLn $ case getValues pairResp "decodeToPair" of
-            Just [Int x, Int y] -> "Decode to pair: " ++ show (x, y)
-            _                   -> "Cannot decode 0 into pairs."
-          putStr "Decode to list: "
-          print $ int_ <$> fromJust (getValues listResp "decodeToList")
-          putStrLn "Decode to Register Machine: "
-          putStrLn . fromJust $ getString rmResp "decodeToRM"
+decode config args = case readMaybe (head args) of
+  Nothing -> if useJSON config
+    then print (mkErrResponse ["The Gödel number must be non-negative!"])
+    else putStrLn "The Gödel number must be non-negative!\n" >> help
+  Just n  -> do
+    let pairResp = mkResponse
+          [ ("decodeToPair", let (x, y) = decodePair n
+                             in  Values [Int x, Int y]) | n /= 0 ]
+    let listResp = mkResponse
+          [("decodeToList", Values $ Int <$> decodeList n)]
+    let rmResp   = mkResponse [("decodeToRM", String . show $ decodeRM n)]
+    if useJSON config
+      then print (noErr $ pairResp <> listResp <> rmResp)
+      else do
+        putStrLn $ case getValues pairResp "decodeToPair" of
+          Just [Int x, Int y] -> "Decode to pair: " ++ show (x, y)
+          _                   -> "Cannot decode 0 into pairs."
+        putStr "Decode to list: "
+        print $ int_ <$> fromJust (getValues listResp "decodeToList")
+        putStrLn "Decode to Register Machine: "
+        putStrLn . fromJust $ getString rmResp "decodeToRM"
 
 encode :: CLIConfig -> [String] -> IO ()
 encode config args = do
