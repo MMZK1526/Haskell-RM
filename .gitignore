@@ -23,4 +23,3 @@ cabal.project.local~
 .ghc.environment.*
 .DS_Store
 Main
-mmzkrm

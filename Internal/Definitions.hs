@@ -8,6 +8,7 @@ module Internal.Definitions where
 import           Data.Array (Array)
 import qualified Data.Array as A
 import           Data.Bifunctor (first)
+import           Data.List
 import qualified Data.Map as M
 import qualified Data.Set as S
 import           Data.Array.IO (IOArray)
@@ -29,18 +30,17 @@ instance Show Line where
   show (P r l)    = "R" ++ show r ++ "+ " ++ show l
   show (M r l l') = "R" ++ show r ++ "- " ++ show l ++ " " ++ show l'
 
--- | The code of a RM consisting of a bunch of "Line"s.
-newtype RMCode = RMCode (Array Int Line)
+-- | The code of a RM consists of the number of registers and an array of
+-- "Line"s.
+data RMCode = RMCode (Array Int Line)
   deriving Eq
 
 instance Show RMCode where
-  show (RMCode arr)
-    | null arr  = "[EMPTY MACHINE]"
-    | otherwise = tail
-                $ foldr (\(i, l) l'-> concat ["\nL", show i, ":\t", l, l'])
-                  "" . zip [0..] $ show <$> toList arr
+  show (RMCode arr) = intercalate "\n" $ zipWith showIxLine [0..] (toList arr)
+    where
+      showIxLine ix l = concat ["L", show ix, ":\t", show l]
 
--- | Gets the number of registers from "RMCode".
+-- | Gets the number of registers from an "RMCode".
 argc :: RMCode -> Int
 argc (RMCode code) = 1 + foldr max 0 (go <$> code)
   where
@@ -48,7 +48,7 @@ argc (RMCode code) = 1 + foldr max 0 (go <$> code)
     go (P i _)   = i
     go (M i _ _) = i
 
--- | Gets the number of lines from "RMCode"
+-- | Gets the number of lines from an "RMCode".
 linec :: RMCode -> Int
 linec rmcode@(RMCode code) = max (length code)
                            $ 1 + foldr max (-1) (go <$> code)
