@@ -2,6 +2,7 @@
 
 module Internal.Response where
 
+import           Data.Char
 import           Data.List (intercalate)
 import           Data.Map (Map)
 import qualified Data.Map as M
@@ -14,18 +15,23 @@ data Value = Int { int_ :: Integer } | Bool Bool | String String | Resp Response
   deriving (Ord, Eq)
 
 instance Show Response where
-  show (Response resp) 
+  show (Response resp)
     = concat [ "{"
-             , intercalate "," $ map (\(k, v) -> show k ++ ":" ++ show v) 
+             , intercalate "," $ map (\(k, v) -> show k ++ ":" ++ show v)
                                      (M.assocs resp)
              , "}" ]
 
 instance Show Value where
   show (Int i)    = show $ show i
-  show (String n) = show n
   show (Bool b)   = show b
   show (Resp r)   = show r
   show (Values v) = show v
+  show (String n) = '"' : concatMap show' n ++ "\""
+    where
+      show' n = case tail $ show n of
+        '\\' : '\'' : _ -> "'"
+        '\\' : e : _    -> if isDigit e then [n] else init . tail $ show n
+        _                      -> [n]
 
 size :: Response -> Int
 size (Response resp) = length resp

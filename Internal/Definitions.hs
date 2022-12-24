@@ -32,13 +32,13 @@ instance Show Line where
 
 -- | The code of a RM consists of the number of registers and an array of
 -- "Line"s.
-data RMCode = RMCode (Array Int Line)
+newtype RMCode = RMCode (Array Int Line)
   deriving Eq
 
 instance Show RMCode where
   show (RMCode arr) = intercalate "\n" $ zipWith showIxLine [0..] (toList arr)
     where
-      showIxLine ix l = concat ["L", show ix, ":\t", show l]
+      showIxLine ix l = concat ["L", show ix, ": ", show l]
 
 -- | Gets the number of registers from an "RMCode".
 argc :: RMCode -> Int
