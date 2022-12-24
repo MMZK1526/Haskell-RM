@@ -9,6 +9,7 @@ import           Data.Char
 import           Data.Functor
 import           Data.Maybe
 import           Data.List
+import           GHC.IO.Encoding (setLocaleEncoding, utf8)
 import           Gadgets.IO
 import           Internal.Definitions
 import           Internal.Line
@@ -97,6 +98,7 @@ optionTable
 
 main :: IO ()
 main = do
+  setLocaleEncoding utf8
   (opts, rawArgs, errs) <- getOpt Permute (jsonOption : optionTable) <$> getArgs
   let config = mkConfig opts
   if not (null $ errs ++ errors config)
