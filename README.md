@@ -144,7 +144,7 @@ Of course, such a definition is quite imprecise, as we have not yet defined what
 
 On first glance, we may believe that all functions are computable. This is, however, not the case. Thanks to [Gödelisation](#Gödelisation), we can prove so via Cantor's diagonal argument:
 
-We can list Register Machines by their corresponding Gödel number, *i.e.* `RM0`, `RM1` *etc.* These machines all have corresponding functions that they implement, *i.e.* `f0`, `f1` *etc.*:
+We can list Register Machines by their corresponding Gödel number, *i.e.* `RM0`, `R ` *etc.* These machines all have corresponding functions that they implement, *i.e.* `f0`, `f1` *etc.*:
 
 Gödel |Machine|Function
 -|-|-
@@ -247,7 +247,7 @@ We will end this long section with a final remark on Wheezy Weavers. If a `n`-li
 
 ### Installation
 
-If you are using Mac OS with Intel chips (*i.e.* not the newer M1 chips), you can download the appropriate executable in [Executables](Executables). The executable works on at least macOS Catalina.
+If you are using Mac OS (both Intel chip and M1) or Ubuntu, you can download the appropriate executable in [Executables](Executables). The executable works on at least macOS Catalina, but **they currently do not represent the latest version since I'm too lazy to compile them on those target machines again**.
 Otherwise, you need to compile the CLI, which requires [ghc and cabal](https://www.haskell.org/cabal/).
 Once the Haskell environment is set up, make sure the packages `containers` and `parsec` are installed by running the following in the terminal:
 
