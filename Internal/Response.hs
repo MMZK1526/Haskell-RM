@@ -23,7 +23,7 @@ instance Show Response where
 
 instance Show Value where
   show (Int i)    = show $ show i
-  show (Bool b)   = show b
+  show (Bool b)   = toLower <$> show b
   show (Resp r)   = show r
   show (Values v) = show v
   show (String n) = '"' : concatMap show' n ++ "\""

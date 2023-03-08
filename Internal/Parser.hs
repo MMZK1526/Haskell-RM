@@ -76,9 +76,9 @@ parseRM = (\x -> let (t, cs) = x in RMCode_ t cs) <$> go M.empty 0
     go t i = (eof >> return (t, [])) <|> do
       (t, line) <- parseLine t i
       (eof >> return (t, [line])) <|> do
-      many (string "\r\n" <|> string "\n")
-      (t, code) <- go t $ i + 1
-      return (t, line : code)
+        many (string "\r\n" <|> string "\n")
+        (t, code) <- go t $ i + 1
+        return (t, line : code)
 
 -- | Parse the label of a line.
 parsePrefix :: Parser (Maybe String)
