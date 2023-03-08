@@ -91,7 +91,7 @@ Finally, once we encode each line of a Register Machine into a number, we can th
 
 One can verify that the "adder" machine in [Introduction](#Introduction) has a Gödel number of `s([152, 1, 4576, 5, 0])`, a number larger than 10^1426.
 
-If we convert a natual number to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line . This does not cause any problem, however, since we treat bad line number as Halt instructions.
+If we convert a natual number to a Register Machine, then most likely it will contain instruction that makes no sense, for example jumping to a non-existing line. This does not cause any problem, however, since we treat bad line number as Halt instructions.
 
 In [Convert.hs](Convert.hs), there are several utility functions that can convert between `Line`s, `RMCode`s, lists, pairs, and natural numbers. The documentation can be viewed [here](#Convert). Moreover, the CLI also provides encoding/decoding intructions, see [Usage](#Usage).
 
