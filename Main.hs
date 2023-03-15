@@ -156,26 +156,26 @@ encode config args = do
     asCode arg  = do
       code@(RMCode arr) <- ExceptT $ openRM arg
       let lineCodes = flip map (elems arr) $ \line -> case line of
-            P n i   -> guard (n <= 6251 || isForced) $> encodeLine line
-            M n i j -> guard ((n <= 6251 && i <= 6251) || isForced)
+            P n i   -> guard (n <= 114514 || isForced) $> encodeLine line
+            M n i j -> guard ((n <= 114514 && i <= 114514) || isForced)
                     $> encodeLine line
             H       -> Just $ encodeLine line
       lift $ do
         let lineResp  = mkResponse
               [("encodeToLine", Values $ Resp . mkMaybeResp <$> lineCodes)]
         let godelResp = mkResponse
-              $ if sum (succ <$> catMaybes lineCodes) > 6251 && not isForced
+              $ if sum (succ <$> catMaybes lineCodes) > 114514 && not isForced
               then [("isTooBig", Bool True)]
               else [("isTooBig", Bool False), ("num", Int $ encodeRM code)]
         return $ lineResp <> mkResponse [("encodeFromRM", Resp godelResp)]
     asList args = do
-      list <- except $ maybe (Left "") Right (sequence $ readMaybe <$> args)
+      list <- except $ maybe (Left "") Right (mapM readMaybe args)
       let pairResp = mkResponse $ case list of
-            [x, y] -> if x > 6251 && not isForced
+            [x, y] -> if x > 114514 && not isForced
               then [("isTooBig", Bool True)]
               else [("isTooBig", Bool False), ("num", Int $ encodePair x y)]
             _      -> []
-      let listResp = mkResponse $ if sum (succ <$> list) > 6251 && not isForced
+      let listResp = mkResponse $ if sum (succ <$> list) > 114514 && not isForced
               then [("isTooBig", Bool True)]
               else [("isTooBig", Bool False), ("num", Int $ encodeList list)]
       return . mkResponse
