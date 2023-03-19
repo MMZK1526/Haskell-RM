@@ -71,7 +71,9 @@ fromRawRMCode (RMCode_ table ls) = RMCode . A.fromList <$> zipWithM go [0..] ls
 
 -- | Parses a "RawRMCode".
 parseRM :: Parser RawRMCode
-parseRM = (\x -> let (t, cs) = x in RMCode_ t cs) <$> go M.empty 0
+parseRM = do
+  many (char '#' >> many (noneOf "\r\n") >> many (oneOf "\r\n"))
+  (\x -> let (t, cs) = x in RMCode_ t cs) <$> go M.empty 0
   where
     go t i = (eof >> return (t, [])) <|> do
       (t, line) <- parseLine t i

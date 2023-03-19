@@ -1,3 +1,4 @@
+# Computes R1 + R2 and stores the result in R0
 start: R1- 1 2
 R0+ start # same as R0+ 0 since start refers to line 0
 R2 3 4 # R, + and - can be ommited

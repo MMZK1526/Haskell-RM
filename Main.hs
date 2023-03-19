@@ -220,7 +220,7 @@ execute config rawArgs = do
   file : args <- return rawArgs
   ecode       <- openRM file
   case ecode of
-    Left error -> print error >> help -- Error parsing source code
+    Left error -> putStrLn error >> help -- Error parsing source code
     Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
       Nothing   -> putStrLn "Error parsing the arguments!\n" >> help
       Just args -> if any (< 0) args -- Run the program
