@@ -139,12 +139,11 @@ decode config args = case readMaybe (head args) of
 encode :: CLIConfig -> [String] -> IO ()
 encode config args = do
   result <- runExceptT $ msum [asCode (head $ args ++ [""]), asList args]
-  let errMsg = "Cannot parse arguments as file path or number list!"
   case result of
-    Left _  -> if useJSON config
+    Left errMsg -> if useJSON config
       then print $ mkErrResponse [errMsg]
       else putStrLn errMsg >> putStrLn "" >> help
-    Right r -> if useJSON config
+    Right r     -> if useJSON config
       then print $ noErr r
       else void . runMaybeT $ msum [fromCode r, fromList r]
   where
