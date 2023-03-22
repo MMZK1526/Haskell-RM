@@ -30,8 +30,9 @@ instance Show Value where
     where
       show' n = case tail $ show n of
         '\\' : '\'' : _ -> "'"
-        '\\' : e : _    -> if isDigit e then [n] else init . tail $ show n
-        _                      -> [n]
+        '"' : _         -> "\\\""
+        '\\' : e : _    -> init . tail $ show n
+        _               -> [n]
 
 size :: Response -> Int
 size (Response resp) = length resp
