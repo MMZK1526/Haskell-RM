@@ -1,6 +1,6 @@
 # Haskell-RM
 
-By MMZK1526 *a.k.a.* Yìtáng Chén
+By MMZK1526
 
 A CLI that evaluates [**Register Machines**](#Register-Machine) efficiently in Haskell. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
