@@ -31,7 +31,7 @@ instance Show Value where
       show' n = case tail $ show n of
         '\\' : '\'' : _ -> "'"
         '"' : _         -> "\\\""
-        '\\' : e : _    -> init . tail $ show n
+        '\\' : e : _    -> if isDigit e then [n] else init . tail $ show n
         _               -> [n]
 
 size :: Response -> Int
