@@ -124,15 +124,19 @@ decode config args = case readMaybe (head args) of
                              in  Values [Int x, Int y]) | n /= 0 ]
     let listResp = mkResponse
           [("decodeToList", Values $ Int <$> decodeList n)]
+    let lineResp = mkResponse
+          [("decodeToLine", String $ show $ decodeLine n)]
     let rmResp   = mkResponse [("decodeToRM", String . show $ decodeRM n)]
     if useJSON config
-      then print (noErr $ pairResp <> listResp <> rmResp)
+      then print (noErr $ pairResp <> listResp <> lineResp <> rmResp)
       else do
         putStrLn $ case getValues pairResp "decodeToPair" of
           Just [Int x, Int y] -> "Decode to pair: " ++ show (x, y)
           _                   -> "Cannot decode 0 into pairs."
         putStr "Decode to list: "
         print $ int_ <$> fromJust (getValues listResp "decodeToList")
+        print "Decode to line:"
+        print . fromJust $ getString lineResp "decodeToLine"
         putStrLn "Decode to Register Machine: "
         putStrLn . fromJust $ getString rmResp "decodeToRM"
 
