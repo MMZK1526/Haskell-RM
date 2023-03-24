@@ -219,22 +219,36 @@ execute config rawArgs = do
   file : args <- return rawArgs
   ecode       <- openRM file
   case ecode of
-    Left error -> putStrLn error >> help -- Error parsing source code
+    Left error -> if useJSON config
+      then print $ mkErrResponse [error]
+      else putStrLn error >> help
     Right code -> case mapM (readMaybe :: String -> Maybe Integer) args of
-      Nothing   -> putStrLn "Error parsing the arguments!\n" >> help
+      Nothing  -> if useJSON config
+        then print $ mkErrResponse ["Error parsing the arguments!"]
+        else putStrLn "Error parsing the arguments!\n" >> help
       Just args -> if any (< 0) args -- Run the program
-        then putStrLn "The arguments must be non-negative!\n" >> help
+        then if useJSON config
+          then print $ mkErrResponse ["The arguments must be non-negative!"]
+          else putStrLn "The arguments must be non-negative!\n" >> help
         else do
           let args'          = if isI0 config then args else 0 : args
-          let showRes RMLoop = putStrLn "The machine never terminates due to \
-                                        \an infinite loop!"
-              showRes r      = do
-                putStrLn $ "Execution finished after "
-                        ++ show (resSteps r)
-                        ++ if resSteps r == 1 then " step." else " steps."
-                putStrLn "Register values: "
-                forM_ (zip [0..] $ resRegs r) $ \(i, r) ->
-                  putStrLn $ "  R" ++ show i ++ ": " ++ show r
+          let showRes RMLoop = if useJSON config
+                then print $ mkErrResponse ["The machine never terminates due to \
+                                            \an infinite loop!"]
+                else putStrLn "The machine never terminates due to \
+                              \an infinite loop!"
+              showRes r      = if useJSON config
+                then do
+                  let stepResp = mkResponse [("steps", Int $ resSteps r)]
+                  let regResp  = mkResponse [("registerValues", Values (Int <$> resRegs r))]
+                  print $ noErr $ stepResp <> regResp
+                else do
+                  putStrLn $ "Execution finished after "
+                          ++ show (resSteps r)
+                          ++ if resSteps r == 1 then " step." else " steps."
+                  putStrLn "Register values: "
+                  forM_ (zip [0..] $ resRegs r) $ \(i, r) ->
+                    putStrLn $ "  R" ++ show i ++ ": " ++ show r
           result <- case detailSteps config of
             Nothing   -> pure $ runRM code args'
             Just step -> do

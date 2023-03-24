@@ -22,7 +22,7 @@ instance Show Response where
              , "}" ]
 
 instance Show Value where
-  show (Int i)    = show $ show i
+  show (Int i)    = show $ show i -- Int is treated as String to avoid precision loss
   show (Bool b)   = toLower <$> show b
   show (Resp r)   = show r
   show (Values v) = show v
