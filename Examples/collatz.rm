@@ -1,3 +1,4 @@
+# Compute the length of the Collatz sequence starting from the value in R1
 checkIs0: R1- checkIs1 end
 checkIs1: R1- addBack1 reach1
 addBack1: R1+ addBack2
