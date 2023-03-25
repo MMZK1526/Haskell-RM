@@ -4,7 +4,7 @@ By MMZK1526
 
 A CLI that evaluates [**Register Machines**](#Register-Machine) efficiently in Haskell. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
-Web APP (unfinished): [flutter-rm.herokuapp.com/](flutter-rm.herokuapp.com/)
+Web APP (unfinished): [flutter-rm.herokuapp.com/](https://flutter-rm.herokuapp.com/#/)
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 
