@@ -81,16 +81,16 @@ eval1S = do
   else case code A.! pc of
     P n i   -> if n > maxReg
       then halt
-      else lift (MA.adjust' regs (+ 1) n) >> put (RM' code regs i (c' + 1))
+      else lift (MA.adjust' regs (+ 1) n) >> put (RM' code regs (fromIntegral i) (c' + 1))
     M n i j -> if n > maxReg
       then halt
       else do
         x <- lift $ regs MA.! n
         if   x == 0
-        then put (RM' code regs j (c' + 1))
+        then put (RM' code regs (fromIntegral j) (c' + 1))
         else do
           lift $ regs MA.=: n $ x `seq` (x - 1)
-          put (RM' code regs i (c' + 1))
+          put (RM' code regs (fromIntegral i) (c' + 1))
     H       -> halt
 
 -- | Evaluate the given "RM" by one cycle. If infinite loop is detected,

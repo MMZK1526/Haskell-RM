@@ -8,7 +8,7 @@ decodeLine :: Integer -> Line
 decodeLine 0 = H
 decodeLine n
   = let (x, y) = decodePair n
-        x'     = x `div` 2
+        x'     = fromIntegral $ x `div` 2
     in  if   even x
         then P x' y
         else let (p, q) = decodePair (y + 1) in M x' p q
