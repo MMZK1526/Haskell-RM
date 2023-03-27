@@ -64,10 +64,10 @@ fromRawRMCode (RMCode_ table ls) = RMCode . A.fromList <$> zipWithM go [0..] ls
         then Left $ "Negatively-indexed register at line " ++ show i ++ "!"
         else liftM2 (M x) (fetch i y) (fetch i z)
       H_       -> return H
-    fetch _ (Left n) = return n
+    fetch _ (Left n) = return $ fromIntegral n
     fetch i (Right str)
-      | str `M.member` table = return $ table M.! str
-      | otherwise            = return len
+      | str `M.member` table = return . fromIntegral $ table M.! str
+      | otherwise            = return $ fromIntegral len
 
 -- | Parses a "RawRMCode".
 parseRM :: Parser RawRMCode

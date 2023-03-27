@@ -22,7 +22,7 @@ import qualified Gadgets.Array.Mutable as MA
 import qualified Gadgets.Array.ST as STA
 
 -- | One line of RM.
-data Line = P Int Int | M Int Int Int | H
+data Line = P Int Integer | M Int Integer Integer | H
   deriving Eq
 
 instance Show Line where
@@ -54,8 +54,8 @@ linec rmcode@(RMCode code) = max (length code)
                            $ 1 + foldr max (-1) (go <$> code)
   where
     go H         = -1
-    go (P _ j)   = j
-    go (M _ j k) = max j k
+    go (P _ j)   = fromIntegral j
+    go (M _ j k) = fromIntegral $ max j k
 
 -- | Cycles in a RM code (formed by plus-statements and the main branch of
 -- minus-statements).
@@ -82,9 +82,9 @@ getCycle rmCode@(RMCode code) = runST $ do
       | s == i && not (S.null set) = (set, M.toList dict)
       | S.member i set             = (S.empty, [])
       | otherwise                  = case code A.! i of
-        P n j   -> go s j (S.insert i set)
+        P n j   -> go s (fromIntegral j) (S.insert i set)
                           (M.insertWith merge n (1, 1) dict)
-        M n j _ -> go s j (S.insert i set)
+        M n j _ -> go s (fromIntegral j) (S.insert i set)
                           (M.insertWith merge n (-1, -1) dict)
         H       -> (S.empty, [])
 

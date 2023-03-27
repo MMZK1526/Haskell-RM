@@ -508,6 +508,12 @@ The [Examples](Examples) folder contains more examples that demonstrates the RM 
 
 If an option is provided more than once, its first occurrence is picked.
 
+### Caveat
+
+In Gödel Number conversion, the line numbers in a Register Machine can be arbitrarily large integers, but the register indices are always bounded by the size of the Haskell `Int` type. This usually will not cause any problem because during the conversion, the register number appears at the exponent and it cannot grow beyond the size limit for `Int`.  
+
+In Register Machine simulation, the values in each register is unbounded, but the line number and the register indices are always bounded by the the size of the Haskell `Int` type. In other words, if the machine attempts to jump to a line number greater than `2 ^ 64`, the program may exhibit weird behaviours.  
+
 ## Documentation
 
 ### Convert
