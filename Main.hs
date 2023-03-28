@@ -135,7 +135,7 @@ decode config args = case readMaybe (head args) of
           _                   -> "Cannot decode 0 into pairs."
         putStr "Decode to list: "
         print $ int_ <$> fromJust (getValues listResp "decodeToList")
-        print "Decode to line:"
+        putStr "Decode to line:"
         print . fromJust $ getString lineResp "decodeToLine"
         putStrLn "Decode to Register Machine: "
         putStrLn . fromJust $ getString rmResp "decodeToRM"
