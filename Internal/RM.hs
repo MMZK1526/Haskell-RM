@@ -15,7 +15,7 @@ import           Data.Array.IO (IOArray)
 import qualified Data.Array as A
 import           Data.Array.ST (MArray, STArray, getBounds)
 import qualified Data.Array.ST as MA
-import           Data.Bifunctor (bimap)
+import           Data.Bifunctor (first, bimap)
 import           Data.Foldable (toList)
 import qualified Gadgets.Array.Mutable as MA
 import           Gadgets.IO
@@ -41,6 +41,25 @@ runRM rmCode args = runST $ do
         (True, _) -> pure $ Just rm
         _         -> exec rm
 
+-- | Run the given RMCode with the given list of arguments (starting with r0)
+-- for "i" steps, recording the status of each step (pc and each register value)
+-- and the result (if terminated within "i" steps).
+runRMSteps :: RMCode -> [Integer] -> Int -> ([(Int, [Integer])], Maybe RMResult)
+runRMSteps rmCode args steps = runST $ do
+  rm <- initRMST rmCode args
+  exec rm 0
+  where
+    freeze  = MA.freeze :: STArray s Int a -> ST s (Array Int a)
+    exec rm i
+      | i == steps = pure ([], Nothing)
+      | otherwise  = do
+        rm <- execStateT eval1S rm
+        let RMState' pc c regs = getRegState rm
+        regs' <- toList <$> freeze regs
+        case isRMTerminated rm of
+          (True, _) -> pure ([], Just $ RMResult regs' pc c)
+          _         -> first ((pc, regs') :) <$> exec rm (i + 1)
+
 -- | Runs the given  "RM". Returns the answer and prints each steps. Run at most
 -- "n" iterations.
 runRMIO :: RM IOArray IO -> (Int, Int) -> IO (RM IOArray IO, Maybe RMResult)
@@ -58,7 +77,7 @@ runRMIO rm (s, n) = do
       | i == s + n = pure (rm, fst $ isRMTerminated rm)
       | otherwise  = do
         let rs@(RMState' pc c regs) = getRegState rm
-        regs                               <- freeze regs
+        regs <- freeze regs
         putStrLn $ "Step " ++ show i ++ ": "
         putStrLn $ "PC: " ++ show pc
         forM_ (A.assocs regs) $ \(i, r) -> putStrLn $ "R" ++ show i

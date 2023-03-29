@@ -253,22 +253,26 @@ execute config rawArgs = do
                   putStrLn "Register values: "
                   forM_ (zip [0..] $ resRegs r) $ \(i, r) ->
                     putStrLn $ "  R" ++ show i ++ ": " ++ show r
-          result <- case detailSteps config of
-            Nothing   -> pure $ runRM code args'
-            Just step -> do
-              rm <- initRMIO code args'
-              let go i rm = do
-                    (rm, mResult) <- runRMIO rm (i, step)
-                    case mResult of
-                      Just r  -> pure r
-                      Nothing -> do
-                        l <- getLine
-                        case toLower <$> l of
-                          "q"    -> pure $ runRM code args'
-                          "quit" -> pure $ runRM code args'
-                          _      -> go (i + step) rm
-              go 1 rm
-          showRes result
+          case detailSteps config of
+            Nothing   -> showRes $ runRM code args'
+            Just step -> if useJSON config
+              then do
+                let (steps, result) = runRMSteps code args' step
+                print steps
+                maybe (pure ()) showRes result
+              else do
+                rm <- initRMIO code args'
+                let go i rm = do
+                      (rm, mResult) <- runRMIO rm (i, step)
+                      case mResult of
+                        Just r  -> showRes r
+                        Nothing -> do
+                          l <- getLine
+                          case toLower <$> l of
+                            "q"    -> showRes $ runRM code args'
+                            "quit" -> showRes $ runRM code args'
+                            _      -> go (i + step) rm
+                go 1 rm
 
 
 --------------------------------------------------------------------------------
