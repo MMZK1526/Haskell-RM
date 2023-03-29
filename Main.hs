@@ -257,9 +257,16 @@ execute config rawArgs = do
             Nothing   -> showRes $ runRM code args'
             Just step -> if useJSON config
               then do
-                let (steps, result) = runRMSteps code args' step
-                print steps
-                maybe (pure ()) showRes result
+                let (steps, mResult) = runRMSteps code args' step
+                let pcResp = mkResponse [("pcSnapshots", Values $ Int . fromIntegral . fst <$> steps)]
+                let snapshotResp = mkResponse [("registerSnapshots", Values $ Values . map Int . snd <$> steps)]
+                stepRegResp <- case mResult of
+                  Nothing -> pure mempty
+                  Just r  -> do
+                    let stepResp = mkResponse [("steps", Int $ resSteps r)]
+                    let regResp  = mkResponse [("registerValues", Values (Int <$> resRegs r))]
+                    return $ stepResp <> regResp
+                print $ noErr $ pcResp <> snapshotResp <> stepRegResp
               else do
                 rm <- initRMIO code args'
                 let go i rm = do

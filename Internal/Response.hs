@@ -72,3 +72,6 @@ mkErrResponse errs = mkResponse [ ("hasError", Bool True), ("errors"
 
 instance Semigroup Response where
   (Response r1) <> (Response r2) = Response $ r1 `M.union` r2
+
+instance Monoid Response where
+  mempty = Response M.empty
