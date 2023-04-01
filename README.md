@@ -14,8 +14,6 @@ For an example of using the CLI to read RM code from a file and evaluate it with
 
 For the full CLI documentation, go to [CLI](#CLI).
 
-For the full API documentation, go to [Documentation](#Documentation).  
-
 ## Register Machine
 
 ### Introduction
@@ -514,76 +512,4 @@ If an option is provided more than once, its first occurrence is picked.
 
 In Gödel Number conversion, the line numbers in a Register Machine can be arbitrarily large integers, but the register indices are always bounded by the size of the Haskell `Int` type. This usually will not cause any problem because during the conversion, the register number appears at the exponent and it cannot grow beyond the size limit for `Int`.  
 
-In Register Machine simulation, the values in each register is unbounded, but the line number and the register indices are always bounded by the the size of the Haskell `Int` type. In other words, if the machine attempts to jump to a line number greater than `2 ^ 64`, the program may exhibit weird behaviours.  
-
-## Documentation
-
-### Convert
-
-* `decodeLine :: Integer -> Line`:  
-  * Decodes an `Integer` into a `Line`.  
-  * *e.g.* `decodeLine 24 = R1- 1 0` since 35 = 2 ^ **3** × (2 × **1** + 1), 3 = 2 × **1** + 1 and 1 + 1 = 2 = (2 ^ **1** × (1 × **0** + 1)).  
-
-* `decodeList :: Integer -> [Integer]`:  
-  * Decodes an `Integer` into a list of `Integer`s.  
-  * *e.g.* `decodeLine 42 = [1, 1, 1]` since 42 = 2 ^ **1** × (2 × 2 ^ **1** × (2 × (2 ^ **1** × (2 × **0** + 1)) + 1) + 1).  
-
-* `decodePair :: (Integral a, Integral b) => b -> (a, a)`:  
-  * Decodes an `Integral` (*e.g* an `Integer`) into a pair of `Integrals`.  
-  * *e.g.* `decodePair 100 = (2, 12)` (using `Integer`s) since 100 = 2 ^ **2** × (2 × **12** + 1).  
-
-* `decodeRM :: Integer -> RMCode`:  
-  * Decodes an `Integer` into a Register Machine `RMCode`.  
-  * *e.g.*  
-
-  ```RM
-  decodeRM 3072 = 
-  L0: R0- 0 1
-  L1: HALT
-  ```
-
-* `encodeLine :: Line -> Integer`:  
-  * Encodes a `Line` into an `Integer`.  
-  * *e.g.* `encodeLine l = 24` if `l = R1- 1 0`.  
-
-* `encodeList :: [Integer] -> Integer`:  
-  * Decodes a list of `Integer`s into an `Integer`.  
-  * *e.g.* `decodeLine [1, 1, 1] = 42`.  
-
-* `encodePair :: (Integral a, Integral b) => a -> a -> b`:  
-  * Decodes a pair of `Integrals` into an `Integral`.  
-  * *e.g.* `decodePair (2, 12) = 100` (using `Integer`s).  
-
-* `encodeRM :: RMCode -> Integer`:  
-  * Decodes a Register Machine `RMCode` into an `Integer`.  
-  * *e.g.* `decodeRM rm = 3072` if  
-
-  ```RM
-  rm =
-  L0: R0- 0 1
-  L1: HALT
-  ```  
-
-  * Note that since the Gödel number of Register Machines "grows" very quickly, it is usually pointless trying to compute the entire number for machines of interests. An alternative is to view the list representation of a machine via `toList`.  
-
-* `fromList :: LineLike l => [l] -> RMCode`:  
-  * Decodes a list of `Linelike`s (namely `Line` or `Integer`) into a Register Machine `RMCode`.  
-  * *e.g.*  
-
-  ```RM
-  fromList [1024, 0] = 
-  L0: R0- 0 1
-  L1: HALT
-  ```
-
-* `toList :: LineLike l => RMCode -> [l]`:  
-  * Encodes a Register Machine `RMCode` into a list of `Linelike`s (namely `Line` or `Integer`).  
-  * *e.g.* `toList rm :: [Integer] = [1024, 0]` if  
-
-  ```RM
-  rm =
-  L0: R0- 0 1
-  L1: HALT
-  ```  
-
-TODO: Other documentation
+In Register Machine simulation, the values in each register is unbounded, but the line number and the register indices are always bounded by the the size of the Haskell `Int` type. In other words, if the machine attempts to jump to a line number greater than `2 ^ 64`, the program may exhibit weird behaviours.
