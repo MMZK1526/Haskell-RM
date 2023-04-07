@@ -6,7 +6,7 @@ A CLI that evaluates [**Register Machines**](#Register-Machine) efficiently in H
 
 Web APP:
 1. [Entrypoint](https://flutter-rm.herokuapp.com/#/)
-2. [Repo](https://github.com/sorrowfulT-Rex/rm_front_end)
+2. [Repo](https://github.com/mMZK1526/rm_front_end)
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 

@@ -56,7 +56,7 @@ mkConfig = foldl go
 {-# INLINE help #-}
 help :: IO ()
 help = do
-  putStrLn "See https://github.com/sorrowfulT-Rex/Haskell-RM for a full \
+  putStrLn "See https://github.com/MMZK1526/Haskell-RM for a full \
            \documentation.\n"
   putStrLn "Usage:"
   putStrLn "  Simulation\tmmzkrm {<options>} <src_file.rm> {<argument>}"
