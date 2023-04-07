@@ -483,11 +483,11 @@ The [Examples](Examples) folder contains more examples that demonstrates the RM 
 
 `mmzkrm {<options>} <src_file.rm> {<arguments>}`
 
-#### Gôdel Number Decoding
+#### Gödel Number Decoding
 
 `mmzkrm -d <gödel_number>`
 
-#### Gôdel Number Encoding
+#### Gödel Number Encoding
 
 `mmzkrm -e (<src_file.rm> | {<argument>})`
 
