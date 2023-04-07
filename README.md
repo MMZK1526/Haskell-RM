@@ -101,7 +101,7 @@ In [Convert.hs](Convert.hs), there are several utility functions that can conver
 
 One of the consequences of being a Turing-complete model is that we can use a certain Register Machine to simulate all other Register Machines. In other words, we can build a single **Universal Register Machine (URM)** that can do the job of all possible register machines (which is why it is braned "Universal"). To use it, we provide a Register Machine as the first input and a list of numbers the second, then the URM can simulate running the input machine with the input list of arguments.
 
-With [Gödeliastion](#gödelisation), we can encode each Register Machine into a number. Moreover, we can also encode a list of arguments into a single number as well. Therefore, we can formalise the Universal Register Machine as following:
+With [Gödelisation](#gödelisation), we can encode each Register Machine into a number. Moreover, we can also encode a list of arguments into a single number as well. Therefore, we can formalise the Universal Register Machine as following:
 
 The Universal Register Machine , `U`, takes two inputs in R1 and R2. It decodes R1 into the corresponding Register Machine `M` and R2 into a list of arguments for that machine. It then simulate running `M` with the list of arguments, and put the result in `R0`.
 
