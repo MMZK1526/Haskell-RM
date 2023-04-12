@@ -1,5 +1,6 @@
 module Main where
 
+import           Control.Exception
 import           Control.Monad
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Except
@@ -97,7 +98,7 @@ optionTable
         errMsg = Error "The argument for steps must be a positive integer!"
 
 main :: IO ()
-main = do
+main = handle (\(e :: SomeException) -> print e) $ do
   setLocaleEncoding utf8
   (opts, rawArgs, errs) <- getOpt Permute (jsonOption : optionTable) <$> getArgs
   let config = mkConfig opts
