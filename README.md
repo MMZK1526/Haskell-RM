@@ -25,7 +25,7 @@ A Register Machine is a simple system involving a finite number of registers (ea
 
 An increment instruction takes a register and a line. It increments a the register and jumps to the given line.  
 
-A decrement instruction takes a register and two line s (say `m` and `n`). If the register is positive, it decrements the value and jumps to line `m`. Otherwise it jump to line `n` (without changing the register, which is still 0).  
+A decrement instruction takes a register and two lines (say `m` and `n`). If the register is positive, it decrements the value and jumps to line `m`. Otherwise it jump to line `n` (without changing the register, which is still 0).  
 
 A halt instruction terminates the machine. If we jump to a line that does not exist, it is treated as a halt instruction as well.
 
