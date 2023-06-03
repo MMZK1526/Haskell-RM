@@ -9,7 +9,7 @@ Web APP:
 2. [Front-end Repo](https://github.com/MMZK1526/rm_front_end)
 3. [Back-end Repo](https://github.com/MMZK1526/ktor-rm)
 
-Note that since it is hosted on Heroku with the Eco Plan, it may take up to 20 or 30 seconds to open the website for the first time.
+Note that since it is hosted on Heroku with the Eco Plan, it may take up to 20 or 30 seconds to open the website for the first time. If the link doesn't work, please let me know by raising an issue or send an email :)
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 
