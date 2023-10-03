@@ -5,11 +5,9 @@ By MMZK1526
 A CLI that evaluates [**Register Machines**](#Register-Machine) efficiently in Haskell. It also provides an library defining and simulating Register Machines that can be embedded in Haskell code.
 
 Web APP:
-1. [Entrypoint](https://flutter-rm.herokuapp.com/)
+1. [Entrypoint](https://mmzk1526.github.io/rm_front_end/)
 2. [Front-end Repo](https://github.com/MMZK1526/rm_front_end)
 3. [Back-end Repo](https://github.com/MMZK1526/ktor-rm)
-
-Note that since it is hosted on Heroku with the Eco Plan, it may take up to 20 or 30 seconds to open the website for the first time. If the link doesn't work, please let me know by raising an issue or send an email :)
 
 If you haven't heard of Register Machines, see [Introduction](#Introduction) for a brief summary.  
 
